@@ -120,31 +120,30 @@ function dropBook() {
 
 
    if (bookTop >= 440 && bookTop <= 500) {
-  const isCaught = bookCenter >= playerLeft && bookCenter <= playerRight;
-  if (isCaught) {
-    score += 100;
-    updateScoreDisplay();
-    showPopup(randomBlessing(), true);
-    book.remove();
-    clearInterval(check);
-  } else {
-    misses++;
-    updateHearts();
-    book.remove();
-    clearInterval(check);
-
-    if (misses >= maxMisses) {
-      showPopup("💔 You've missed too many. Game over.");
-      setTimeout(() => endGame(), 2000);
+    const isCaught = bookCenter >= playerLeft && bookCenter <= playerRight;
+    if (isCaught) {
+        score += 100;
+        updateScoreDisplay();
+        showPopup(randomBlessing(), true);
+        book.remove();
+        clearInterval(check);
     } else {
-      showPopup(randomMissed(), false);
+        misses++;
+        updateHearts();
+        book.remove();
+        clearInterval(check);
+        
+        if (misses >= maxMisses) {
+            showPopup("💔 You've missed too many. Game over.");
+            setTimeout(() => endGame(), 2000);
+        } else {
+            showPopup(randomMissed(), false);
         }
-      }
-
-      book.remove();
-      clearInterval(check);
     }
-  }, 100);
+    book.remove();
+    clearInterval(check);
+}
+}, 100);
 
   book.addEventListener("animationend", () => {
     book.remove();
