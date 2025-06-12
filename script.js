@@ -6,8 +6,6 @@ const startScreen = document.getElementById("start-screen");
 const gameContainer = document.getElementById("game-container");
 const scoreDisplay = document.getElementById("score-display");
 
-
-
 let score = 0;
 let misses = 0;
 const maxMisses = 3;
@@ -15,6 +13,8 @@ let isTouching = false;
 let dropInterval;
 let playerX = 175;
 const moveAmount = 20;
+let lightLevel = 0
+
 
 // Character selection
 function detectInstructions() {
@@ -52,6 +52,11 @@ startBtn.addEventListener("click", () => {
   startScreen.style.display = "none";
   gameScreen.classList.remove("hidden");
 
+  // Always start at level 1 background
+  const container = document.getElementById("game-container");
+  container.classList.remove("bg-level-1", "bg-level-2", "bg-level-3", "bg-level-4");
+  container.classList.add("bg-level-1");
+
   player.innerHTML = `<img src="images/player-${selectedCharacter}.png" alt="${selectedCharacter}" class="player-sprite">`;
 
   score = 0;
@@ -63,6 +68,7 @@ startBtn.addEventListener("click", () => {
   updateHearts();
   startDroppingBooks();
 });
+
 
 // Keyboard movement
 document.addEventListener("keydown", (e) => {
@@ -146,6 +152,8 @@ function showPopup(message, isBlessing = false) {
 function dropBook() {
   const book = document.createElement("div");
   book.classList.add("book");
+  let fallSpeed = getFallSpeed (score);
+  book.style.animation = 'fall ${fallSpeed}ms linear';
   book.innerHTML = `<img src="images/bookofmormon.png" alt="Book of Mormon" class="book-sprite">`;
 
   let bookX = Math.floor(Math.random() * 360);
@@ -165,20 +173,28 @@ function dropBook() {
     const playerRight = playerLeft + playerRect.width;
     const bookCenter = bookLeft + (bookRect.width / 2);
 
-
    if (bookTop >= 440 && bookTop <= 500) {
   const isCaught = bookCenter >= playerLeft && bookCenter <= playerRight;
   clearInterval(check); // stop checking once it's caught or missed
   book.remove(); // remove the book either way
-
+  
+  
   if (isCaught) {
     score += 100;
+    if (lightLevel < 4) lightLevel++; 
     updateScoreDisplay();
+    updateBackground();
+    clearInterval(dropInterval);
+    startDroppingBooks();
     showPopup(randomBlessing(), true);
   } else {
     misses++;
+    lightLevel = -3;
     updateHearts();
-
+    updateBackground();
+    clearInterval(dropInterval);
+    startDroppingBooks();
+    
     if (misses >= maxMisses) {
       showPopup("💔 You've missed too many. Game over.");
       setTimeout(() => endGame(), 2000);
@@ -198,10 +214,60 @@ function dropBook() {
 // Start dropping
 function startDroppingBooks() {
   clearInterval(dropInterval);
+
+  let currentInterval = getDropSpeed (score);
   dropInterval = setInterval(() => {
     if (!gameScreen.classList.contains("hidden")) dropBook();
-  }, 3000);
+  }, currentInterval);
 }
+
+//Background changing
+function updateBackground() {
+  const container = document.getElementById("game-container");
+  //container.classList.remove("bg-level-0", "bg-level-1", "bg-level-2", "bg-level-3"); 
+  container.className = "";
+
+  // Clamp lightLevel between -3 (black) and 4 (white)
+  lightLevel = Math.max(-3, Math.min(4, lightLevel));
+
+  const classMap = {
+    "-3": "bg-dark-3",
+    "-2": "bg-dark-2",
+    "-1": "bg-dark-1",
+     0: "bg-level-0",
+     1: "bg-level-1",
+     2: "bg-level-2",
+     3: "bg-level-3",
+     4: "bg-level-4"
+  };
+
+  container.classList.add(classMap[lightLevel]);
+}
+//   // Light levels based on score (progression toward white)
+//   if (score >= 400) {
+//     container.classList.add("bg-level-4");
+//   } else if (score >= 300) {
+//     container.classList.add("bg-level-3");
+//   } else if (score >= 200) {
+//     container.classList.add("bg-level-2");
+//   } else if (score >= 100) {
+//     container.classList.add("bg-level-1");
+//   } else {
+//     container.classList.add("bg-level-0");
+//   }
+
+//   // If player missed, override it with darker backgrounds
+//   if (misses === 1) {
+//     container.classList.remove("bg-level-4", "bg-level-3", "bg-level-2", "bg-level-1", "bg-level-0");
+//     container.classList.add("bg-dark-1");
+//   } else if (misses === 2) {
+//     container.classList.remove("bg-dark-1");
+//     container.classList.add("bg-dark-2");
+//   } else if (misses >= 3) {
+//     container.classList.remove("bg-dark-2");
+//     container.classList.add("bg-dark-3");
+//   }
+// }
 
 // End game
 function endGame() {
@@ -237,3 +303,19 @@ document.addEventListener("DOMContentLoaded", () => {
   detectInstructions();
   // any other startup logic
 });
+
+function getFallSpeed (score) {
+  if (score >= 400) return 1000;
+  if (score >= 300) return 1200;
+  if (score >= 200) return 1400;
+  if (score >= 100) return 1600;
+  return 2000;
+}
+
+function getDropSpeed (score) {
+  if (score >= 400) return 1000;
+  if (score >= 300) return 1200;
+  if (score >= 200) return 1400;
+  if (score >= 100) return 1600;
+  return 2000;
+}
