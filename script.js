@@ -5,13 +5,16 @@ const gameScreen = document.getElementById("game-screen");
 const startScreen = document.getElementById("start-screen");
 const gameContainer = document.getElementById("game-container");
 const scoreDisplay = document.getElementById("score-display");
+const playerWidth = player.offsetWidth || 50;
+const containerWidth = gameContainer.offsetWidth || 400;
+
+const newX = Math.max(0, Math.min(relativeX - (playerWidth / 2), containerWidth - playerWidth));
 
 let score = 0;
-
 let misses = 0;
 const maxMisses = 3; 
-
 let isTouching = false;
+let dropInterval;
 
 // Character selection
 document.querySelectorAll(".char-option").forEach(option => {
@@ -198,4 +201,13 @@ function moveToTouch(touch) {
   const newX = Math.max(0, Math.min(relativeX - 25, 350)); // assuming 400px wide container, 50px player
   playerX = newX;
   player.style.left = `${playerX}px`;
+}
+
+function startDroppingBooks() {
+  clearInterval(dropInterval);
+  dropInterval = setInterval(() => {
+    if (!gameScreen.classList.contains("hidden")) {
+      dropBook();
+    }
+  }, 3000);
 }

@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
+#popup {
+  z-index: 1000;
+}
+
 body {
   font-family: 'Press Start 2P', monospace;
   background: #f0f8ff;
