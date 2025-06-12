@@ -25,9 +25,34 @@ document.querySelectorAll(".char-option").forEach(option => {
     startBtn.disabled = false;
   });
 });
+function detectInstructions() {
+  const instructions = [];
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  if (isTouchDevice) {
+    instructions.push("📱 On smartphone: Hold and drag your character left/right.");
+    instructions.push("👆 Tap and hold directly on your character to move.");
+  } else {
+    instructions.push("⌨️ On desktop: Use Left ⬅️ and Right ➡️ arrow keys to move.");
+  }
+
+  instructions.push("🖱️ Using mouse: Click and hold on your character to drag left/right.");
+
+  const instructionList = document.getElementById("instruction-list");
+  instructionList.innerHTML = "";
+  instructions.forEach(item => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    instructionList.appendChild(li);
+  });
+}
+
+// Call it when page loads
+detectInstructions();
 
 // Start game
 startBtn.addEventListener("click", () => {
+  document.getElementById("instructions").style.display = "none";
   startScreen.classList.add("hidden");
   gameScreen.classList.remove("hidden");
   player.innerHTML = `<img src="images/player-${selectedCharacter}.png" alt="${selectedCharacter}" class="player-sprite">`;
@@ -120,28 +145,25 @@ function dropBook() {
 
 
    if (bookTop >= 440 && bookTop <= 500) {
-    const isCaught = bookCenter >= playerLeft && bookCenter <= playerRight;
-    if (isCaught) {
-        score += 100;
-        updateScoreDisplay();
-        showPopup(randomBlessing(), true);
-        book.remove();
-        clearInterval(check);
+  const isCaught = bookCenter >= playerLeft && bookCenter <= playerRight;
+  clearInterval(check); // stop checking once it's caught or missed
+  book.remove(); // remove the book either way
+
+  if (isCaught) {
+    score += 100;
+    updateScoreDisplay();
+    showPopup(randomBlessing(), true);
+  } else {
+    misses++;
+    updateHearts();
+
+    if (misses >= maxMisses) {
+      showPopup("💔 You've missed too many. Game over.");
+      setTimeout(() => endGame(), 2000);
     } else {
-        misses++;
-        updateHearts();
-        book.remove();
-        clearInterval(check);
-        
-        if (misses >= maxMisses) {
-            showPopup("💔 You've missed too many. Game over.");
-            setTimeout(() => endGame(), 2000);
-        } else {
-            showPopup(randomMissed(), false);
-        }
+      showPopup(randomMissed(), false);
     }
-    book.remove();
-    clearInterval(check);
+  }
 }
 }, 100);
 
@@ -183,3 +205,8 @@ function randomBlessing() {
 function randomMissed() {
   return missed[Math.floor(Math.random() * missed.length)];
 }
+
+document.getElementById("howto-continue").addEventListener("click", () => {
+  document.getElementById("how-to-play").style.display = "none";
+  document.getElementById("start-screen").classList.remove("hidden");
+});
