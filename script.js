@@ -13,31 +13,6 @@ const maxMisses = 3;
 
 let isTouching = false;
 
-gameContainer.addEventListener("touchstart", (e) => {
-  isTouching = true;
-  moveToTouch(e.touches[0]);
-});
-
-gameContainer.addEventListener("touchmove", (e) => {
-  if (isTouching) {
-    moveToTouch(e.touches[0]);
-  }
-});
-
-gameContainer.addEventListener("touchend", () => {
-  isTouching = false;
-});
-
-function moveToTouch(touch) {
-  const rect = gameContainer.getBoundingClientRect();
-  const relativeX = touch.clientX - rect.left;
-
-  // Clamp X and center player
-  const newX = Math.max(0, Math.min(relativeX - 25, 350)); // assuming 400px wide container, 50px player
-  playerX = newX;
-  player.style.left = `${playerX}px`;
-}
-
 // Character selection
 document.querySelectorAll(".char-option").forEach(option => {
   option.addEventListener("click", () => {
@@ -198,4 +173,29 @@ function updateHearts() {
     const heart = document.getElementById(`heart-${i}`);
     heart.textContent = i <= (maxMisses - misses) ? "❤️" : "🖤";
   }
+}
+
+gameContainer.addEventListener("touchstart", (e) => {
+  isTouching = true;
+  moveToTouch(e.touches[0]);
+});
+
+gameContainer.addEventListener("touchmove", (e) => {
+  if (isTouching) {
+    moveToTouch(e.touches[0]);
+  }
+});
+
+gameContainer.addEventListener("touchend", () => {
+  isTouching = false;
+});
+
+function moveToTouch(touch) {
+  const rect = gameContainer.getBoundingClientRect();
+  const relativeX = touch.clientX - rect.left;
+
+  // Clamp X and center player
+  const newX = Math.max(0, Math.min(relativeX - 25, 350)); // assuming 400px wide container, 50px player
+  playerX = newX;
+  player.style.left = `${playerX}px`;
 }
