@@ -17,33 +17,15 @@ let playerX = 175;
 const moveAmount = 20;
 
 // Character selection
-document.querySelectorAll(".char-option").forEach(option => {
-  option.addEventListener("click", () => {
-    document.querySelectorAll(".char-option").forEach(o => o.classList.remove("selected"));
-    option.classList.add("selected");
-    selectedCharacter = option.dataset.char;
-    startBtn.disabled = false;
-  });
-});
 function detectInstructions() {
-  const instructions = [];
-  const isTouchDevice = window.matchMedia("(pointer: coarse)").matches || 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const instructions = [
+    "🕹️ Move your character left and right to catch the books.",
+    "📱 On smartphone: Hold and drag your character left/right",
+    "👆 Tap and hold directly on your character to move",
+    "🖱️ Using mouse: Click and hold on your character to drag left/right.",
+    "⌨️ On Keyboard: Use Left ⬅️ and Right ➡️ arrow keys to move"
+  ];
 
-  // Touch device (smartphone/tablet)
-  if (isTouchDevice) {
-    instructions.push("📱 On smartphone: Hold and drag your character left/right.");
-    instructions.push("👆 Tap and hold directly on your character to move.");
-  }
-
-  // Desktop devices
-  const isDesktop = !isTouchDevice;
-
-  if (isDesktop) {
-    instructions.push("⌨️ On desktop: Use Left ⬅️ and Right ➡️ arrow keys to move.");
-    instructions.push("🖱️ Using mouse: Click and hold on your character to drag left/right.");
-  }
-
-  // Display the instructions
   const instructionList = document.getElementById("instruction-list");
   instructionList.innerHTML = "";
   instructions.forEach(item => {
@@ -53,6 +35,14 @@ function detectInstructions() {
   });
 }
 
+document.querySelectorAll(".char-option").forEach(option => {
+  option.addEventListener("click", () => {
+    document.querySelectorAll(".char-option").forEach(o => o.classList.remove("selected"));
+    option.classList.add("selected");
+    selectedCharacter = option.dataset.char;
+    startBtn.disabled = false;
+  });
+});
 
 // Call it when page loads
 detectInstructions();
