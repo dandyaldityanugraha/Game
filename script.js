@@ -232,3 +232,8 @@ document.getElementById("howto-continue").addEventListener("click", () => {
   document.getElementById("how-to-play").style.display = "none";
   document.getElementById("start-screen").style.display = "block";
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  detectInstructions();
+  // any other startup logic
+});
