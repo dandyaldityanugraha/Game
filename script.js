@@ -15,12 +15,12 @@ let isTouching = false;
 
 gameContainer.addEventListener("touchstart", (e) => {
   isTouching = true;
-  moveToTouch(e.touches[0].clientX);
+  moveToTouch(e.touches[0]);
 });
 
 gameContainer.addEventListener("touchmove", (e) => {
   if (isTouching) {
-    moveToTouch(e.touches[0].clientX);
+    moveToTouch(e.touches[0]);
   }
 });
 
@@ -28,17 +28,15 @@ gameContainer.addEventListener("touchend", () => {
   isTouching = false;
 });
 
-function moveToTouch(touchX) {
-  // Get game container's position
+function moveToTouch(touch) {
   const rect = gameContainer.getBoundingClientRect();
-  const relativeX = touchX - rect.left;
+  const relativeX = touch.clientX - rect.left;
 
-  // Clamp within game area
-  const clampedX = Math.max(0, Math.min(relativeX - 25, 360)); // 25 is half player width
-  playerX = clampedX;
-  player.style.left = playerX + "px";
+  // Clamp X and center player
+  const newX = Math.max(0, Math.min(relativeX - 25, 350)); // assuming 400px wide container, 50px player
+  playerX = newX;
+  player.style.left = `${playerX}px`;
 }
-
 
 // Character selection
 document.querySelectorAll(".char-option").forEach(option => {
