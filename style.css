@@ -172,3 +172,7 @@ button {
 .heart {
   transition: 0.3s ease;
 }
+
+#game-container {
+  touch-action: none; /* Prevent scrolling while dragging */
+}

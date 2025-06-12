@@ -11,6 +11,34 @@ let score = 0;
 let misses = 0;
 const maxMisses = 3; 
 
+let isTouching = false;
+
+gameContainer.addEventListener("touchstart", (e) => {
+  isTouching = true;
+  moveToTouch(e.touches[0].clientX);
+});
+
+gameContainer.addEventListener("touchmove", (e) => {
+  if (isTouching) {
+    moveToTouch(e.touches[0].clientX);
+  }
+});
+
+gameContainer.addEventListener("touchend", () => {
+  isTouching = false;
+});
+
+function moveToTouch(touchX) {
+  // Get game container's position
+  const rect = gameContainer.getBoundingClientRect();
+  const relativeX = touchX - rect.left;
+
+  // Clamp within game area
+  const clampedX = Math.max(0, Math.min(relativeX - 25, 360)); // 25 is half player width
+  playerX = clampedX;
+  player.style.left = playerX + "px";
+}
+
 
 // Character selection
 document.querySelectorAll(".char-option").forEach(option => {
