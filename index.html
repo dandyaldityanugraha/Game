@@ -1,11 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Catch the Book of Mormon</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    
+  <!-- Start Screen -->
+  <div id="start-screen">
+    <h1 class="pixel-title">
+      <img src="images/bookofmormon.png" alt="Catch the Book of Mormon" class="title-image"> 
+      Catch the Book of Mormon
+    </h1>
+    <p>Choose your character:</p>
+    <div class="character-select">
+      <div class="char-option" data-char="man">
+        <img src="images/player-man.png" alt="Man" class="char-image">
+      </div>
+      <div class="char-option" data-char="woman">
+        <img src="images/player-woman.png" alt="Woman" class="char-image">
+      </div>
+    </div>
+    <button id="start-btn" disabled>Start Game</button> 
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game-screen" class="hidden">
+    <h2 id="game-title">🛤️ Life with or without the Book of Mormon</h2>
+    <div id="top-bar">
+        <div id="hearts">
+            <span class="heart" id="heart-1">❤️</span>
+            <span class="heart" id="heart-2">❤️</span>
+            <span class="heart" id="heart-3">❤️</span>
+        </div>
+        <div id="score-display">000000</div>
+    </div>
+
+    <div id="game-container">
+        <div id="player"></div>
+    </div>
+  </div>
+
+
+  <!-- Pop-up -->
+  <div id="popup" class="hidden">
+    <p id="popup-text"></p>
+  </div>
+
+
+  <div id="reflection-screen" class="hidden">
+    <h2>Final Reflection</h2>
+    <p>Your Score: <span id="final-score">000000</span></p>
+    <p>How has studying the Book of Mormon blessed you?</p>
+    <textarea id="reflection-input" rows="5" cols="50" placeholder="Write your thoughts..."></textarea><br><br>
+    <button onclick="submitReflection()">Submit</button>
+  </div>
+
+
+  <!-- Script -->
+  <script src="script.js"></script>
 </body>
 </html>
