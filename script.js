@@ -6,6 +6,8 @@ const startScreen = document.getElementById("start-screen");
 const gameContainer = document.getElementById("game-container");
 const scoreDisplay = document.getElementById("score-display");
 
+
+
 let score = 0;
 let misses = 0;
 const maxMisses = 3;
@@ -105,25 +107,37 @@ function dropBook() {
   gameContainer.appendChild(book);
 
   let check = setInterval(() => {
-    const bookTop = parseInt(window.getComputedStyle(book).top);
-    const playerLeft = parseInt(player.style.left);
+    const bookRect = book.getBoundingClientRect();
+    const playerRect = player.getBoundingClientRect();
+    const containerRect = gameContainer.getBoundingClientRect();
+    
+    // Get relative positions inside game container
+    const bookTop = bookRect.top - containerRect.top;
+    const bookLeft = bookRect.left - containerRect.left;
+    const playerLeft = playerRect.left - containerRect.left;
+    const playerRight = playerLeft + playerRect.width;
+    const bookCenter = bookLeft + (bookRect.width / 2);
 
-    if (bookTop > 490) {
-      const caught = Math.abs(playerLeft - bookX) < 40;
 
-      if (caught) {
-        score += 100;
-        updateScoreDisplay();
-        showPopup(randomBlessing(), true);
-      } else {
-        misses++;
-        updateHearts();
+   if (bookTop >= 440 && bookTop <= 500) {
+  const isCaught = bookCenter >= playerLeft && bookCenter <= playerRight;
+  if (isCaught) {
+    score += 100;
+    updateScoreDisplay();
+    showPopup(randomBlessing(), true);
+    book.remove();
+    clearInterval(check);
+  } else {
+    misses++;
+    updateHearts();
+    book.remove();
+    clearInterval(check);
 
-        if (misses >= maxMisses) {
-          showPopup("💔 You've missed too many. Game over.");
-          setTimeout(() => endGame(), 2000);
-        } else {
-          showPopup(randomMissed(), false);
+    if (misses >= maxMisses) {
+      showPopup("💔 You've missed too many. Game over.");
+      setTimeout(() => endGame(), 2000);
+    } else {
+      showPopup(randomMissed(), false);
         }
       }
 
