@@ -27,17 +27,23 @@ document.querySelectorAll(".char-option").forEach(option => {
 });
 function detectInstructions() {
   const instructions = [];
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const isTouchDevice = window.matchMedia("(pointer: coarse)").matches || 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
+  // Touch device (smartphone/tablet)
   if (isTouchDevice) {
     instructions.push("📱 On smartphone: Hold and drag your character left/right.");
     instructions.push("👆 Tap and hold directly on your character to move.");
-  } else {
-    instructions.push("⌨️ On desktop: Use Left ⬅️ and Right ➡️ arrow keys to move.");
   }
 
-  instructions.push("🖱️ Using mouse: Click and hold on your character to drag left/right.");
+  // Desktop devices
+  const isDesktop = !isTouchDevice;
 
+  if (isDesktop) {
+    instructions.push("⌨️ On desktop: Use Left ⬅️ and Right ➡️ arrow keys to move.");
+    instructions.push("🖱️ Using mouse: Click and hold on your character to drag left/right.");
+  }
+
+  // Display the instructions
   const instructionList = document.getElementById("instruction-list");
   instructionList.innerHTML = "";
   instructions.forEach(item => {
@@ -47,19 +53,22 @@ function detectInstructions() {
   });
 }
 
+
 // Call it when page loads
 detectInstructions();
 
 // Start game
 startBtn.addEventListener("click", () => {
-  document.getElementById("instructions").style.display = "none";
-  startScreen.classList.add("hidden");
+  startScreen.style.display = "none";
   gameScreen.classList.remove("hidden");
+
   player.innerHTML = `<img src="images/player-${selectedCharacter}.png" alt="${selectedCharacter}" class="player-sprite">`;
+
   score = 0;
   misses = 0;
   playerX = 175;
   player.style.left = `${playerX}px`;
+
   updateScoreDisplay();
   updateHearts();
   startDroppingBooks();
@@ -95,6 +104,28 @@ function moveToTouch(touch) {
   playerX = clampedX;
   player.style.left = `${playerX}px`;
 }
+
+// Mouse drag movement
+let isMouseDragging = false;
+
+player.addEventListener("mousedown", (e) => {
+  isMouseDragging = true;
+});
+
+document.addEventListener("mouseup", () => {
+  isMouseDragging = false;
+});
+
+document.addEventListener("mousemove", (e) => {
+  if (isMouseDragging) {
+    const rect = gameContainer.getBoundingClientRect();
+    const relativeX = e.clientX - rect.left;
+    const clampedX = Math.max(0, Math.min(relativeX - 25, 350));
+    playerX = clampedX;
+    player.style.left = `${playerX}px`;
+  }
+});
+
 
 // Score display
 function updateScoreDisplay() {
@@ -140,6 +171,7 @@ function dropBook() {
     const bookTop = bookRect.top - containerRect.top;
     const bookLeft = bookRect.left - containerRect.left;
     const playerLeft = playerRect.left - containerRect.left;
+
     const playerRight = playerLeft + playerRect.width;
     const bookCenter = bookLeft + (bookRect.width / 2);
 
@@ -208,5 +240,5 @@ function randomMissed() {
 
 document.getElementById("howto-continue").addEventListener("click", () => {
   document.getElementById("how-to-play").style.display = "none";
-  document.getElementById("start-screen").classList.remove("hidden");
+  document.getElementById("start-screen").style.display = "block";
 });

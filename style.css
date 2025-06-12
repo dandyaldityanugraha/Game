@@ -147,6 +147,8 @@ button {
   position: absolute;
   bottom: 10px;
   left: 175px;
+  pointer-events: auto;
+  cursor: grab;
 }
 
 .player-sprite {
@@ -192,8 +194,8 @@ button {
 }
 
 
-.hidden {
-  display: none;
+.hidden { 
+    display: none; 
 }
 
 #reflection-screen {
@@ -221,7 +223,7 @@ button {
 }
 
 #game-container {
-  touch-action: none; /* Prevent scrolling while dragging */
+  touch-action: none;
 }
 
 @media (max-width: 420px) {
