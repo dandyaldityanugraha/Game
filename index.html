@@ -5,17 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Catch the Book of Mormon</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- EmailJS SDK -->
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-  <script type="text/javascript">
-    (function() {
-      // Initialize EmailJS with your public key
-      emailjs.init("YOUR_PUBLIC_KEY_HERE");
-    })();
-  </script>
 </head>
 <body>
-    <div id="how-to-play" class="popup-fullscreen">
+    <div id="how-to-play" class="popup-fullscreen" style="display: none;">
         <div class="popup-content">
             <h2>🎮 How to Play</h2>
             <ul id="instruction-list"></ul>
@@ -64,16 +56,7 @@
     <p id="popup-text"></p>
   </div>
 
-
-  <div id="reflection-screen" class="hidden">
-    <h2>Final Reflection</h2>
-    <p>Your Score: <span id="final-score">000000</span></p>
-    <p>How has studying the Book of Mormon blessed you?</p>
-    <textarea id="reflection-input" rows="5" cols="50" placeholder="Write your thoughts..."></textarea><br><br>
-    <button onclick="submitReflection()">Submit</button>
-    <button onclick="window.location.reload()">Play Again</button>
-  </div>
-
+  <div id="reflection-screen" class="hidden"></div>
 
   <!-- Script -->
   <script src="script.js"></script>

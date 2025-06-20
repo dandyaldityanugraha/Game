@@ -155,6 +155,12 @@ function showPopup(message, isBlessing = false) {
 
 // Book drop logic
 function dropBook() {
+  // Prevents new books from dropping after game over, but before screen transition
+  if (misses >= maxMisses) {
+    clearInterval(dropInterval);
+    return;
+  }
+
   const book = document.createElement("div");
   book.classList.add("book");
   let fallSpeed = getSpeed(score);
@@ -165,55 +171,69 @@ function dropBook() {
   book.style.left = bookX + "px";
   gameContainer.appendChild(book);
 
-  let check = setInterval(() => {
+  let isHandled = false;
+
+  const checkInterval = setInterval(() => {
+    if (isHandled) {
+      clearInterval(checkInterval);
+      return;
+    }
+    
     const bookRect = book.getBoundingClientRect();
     const playerRect = player.getBoundingClientRect();
     const containerRect = gameContainer.getBoundingClientRect();
-    
-    // Get relative positions inside game container
     const bookTop = bookRect.top - containerRect.top;
-    const bookLeft = bookRect.left - containerRect.left;
-    const playerLeft = playerRect.left - containerRect.left;
 
-    const playerRight = playerLeft + playerRect.width;
-    const bookCenter = bookLeft + (bookRect.width / 2);
+    if (bookTop >= 440) { // When book reaches the bottom area
+      isHandled = true;
+      clearInterval(checkInterval);
+      book.remove();
 
-   if (bookTop >= 440 && bookTop <= 500) {
-  const isCaught = bookCenter >= playerLeft && bookCenter <= playerRight;
-  clearInterval(check); // stop checking once it's caught or missed
-  book.remove(); // remove the book either way
-  
-  
-  if (isCaught) {
-    score += 100;
-    if (lightLevel < 4) lightLevel++; 
-    updateScoreDisplay();
-    updateBackground();
-    clearInterval(dropInterval);
-    startDroppingBooks();
-    showPopup(randomBlessing(), true);
-  } else {
-    misses++;
-    lightLevel = -3;
-    updateHearts();
-    updateBackground();
-    clearInterval(dropInterval);
-    startDroppingBooks();
-    
-    if (misses >= maxMisses) {
-      showPopup("💔 You've missed too many. Game over.");
-      setTimeout(() => endGame(), 2000);
-    } else {
-      showPopup(randomMissed(), false);
+      const playerLeft = playerRect.left - containerRect.left;
+      const playerRight = playerLeft + playerRect.width;
+      const bookLeft = bookRect.left - containerRect.left;
+      const bookCenter = bookLeft + (bookRect.width / 2);
+
+      if (bookCenter >= playerLeft && bookCenter <= playerRight && bookRect.bottom > playerRect.top) {
+        // CATCH
+        score += 100;
+        if (lightLevel < 4) lightLevel++;
+        updateScoreDisplay();
+        updateBackground();
+        clearInterval(dropInterval);
+        startDroppingBooks();
+        showPopup(randomBlessing(), true);
+      } else {
+        // MISS
+        handleMiss();
+      }
     }
-  }
-}
-}, 100);
+  }, 50);
 
   book.addEventListener("animationend", () => {
+    if (!isHandled) {
+      isHandled = true;
+      handleMiss();
+    }
+    // Clean up book and interval regardless
     book.remove();
-    clearInterval(check);
+    clearInterval(checkInterval);
   });
+}
+
+function handleMiss() {
+  misses++;
+  lightLevel = -3;
+  updateHearts();
+  updateBackground();
+  
+  if (misses >= maxMisses) {
+    clearInterval(dropInterval); // Stop more books from falling
+    showPopup("💔 You've missed too many. Game over.");
+    setTimeout(endGame, 2000);
+  } else {
+    showPopup(randomMissed(), false);
+  }
 }
 
 // Start dropping
@@ -250,7 +270,6 @@ function updateBackground() {
 // End game
 function endGame() {
   gameScreen.classList.add("hidden");
-  document.getElementById("final-score").textContent = score.toString().padStart(6, '0');
   
   // Calculate insights based on performance
   const booksCaught = Math.floor(score / 100);
@@ -273,7 +292,10 @@ function endGame() {
       </div>
       
       <div class="reflection-prompts">
-        <h3>🤔 Deep Reflection</h3>
+        <h3>Deep Reflection</h3>
+        <p><strong>Your Name:</strong></p>
+        <input type="text" id="player-name" placeholder="Enter your name..." style="width: 100%; padding: 10px; margin-bottom: 15px; border: 2px solid #9c27b0; border-radius: 5px; font-family: 'Press Start 2P', monospace; font-size: 12px;">
+        
         <p><strong>How has studying the Book of Mormon blessed your life this semester?</strong></p>
         <textarea id="reflection-input" rows="4" cols="50" placeholder="Share your thoughts about the blessings you've experienced..."></textarea>
         
@@ -293,7 +315,6 @@ function endGame() {
       <div class="action-buttons">
         <button onclick="submitReflection()" class="primary-btn">📤 Submit Reflection</button>
         <button onclick="viewAllReflections()" class="secondary-btn">📖 View All Reflections</button>
-        <button onclick="clearAllReflections()" class="secondary-btn">🗑️ Clear All Reflections</button>
         <button onclick="window.location.reload()" class="primary-btn">🔄 Play Again</button>
       </div>
     </div>
@@ -321,17 +342,19 @@ function getPersonalMessage(booksCaught) {
 
 // Enhanced reflection submission
 function submitReflection() {
+  const playerName = document.getElementById("player-name").value;
   const reflection1 = document.getElementById("reflection-input").value;
   const reflection2 = document.getElementById("reflection-input-2").value;
   const reflection3 = document.getElementById("reflection-input-3").value;
   
-  if (reflection1.trim() === "" || reflection2.trim() === "" || reflection3.trim() === "") {
-    alert("Please complete all reflection questions before submitting.");
+  if (playerName.trim() === "" || reflection1.trim() === "" || reflection2.trim() === "" || reflection3.trim() === "") {
+    alert("Please complete your name and all reflection questions before submitting.");
     return;
   }
   
   // Save reflections to local storage
   const reflections = {
+    name: playerName,
     date: new Date().toLocaleDateString(),
     time: new Date().toLocaleTimeString(),
     blessings: reflection1,
@@ -346,11 +369,11 @@ function submitReflection() {
   allReflections.push(reflections);
   localStorage.setItem("bookOfMormonReflections", JSON.stringify(allReflections));
   
-  // Show success message with personal insights (no email submission box)
+  // Show success message with personal insights
   const reflectionScreen = document.getElementById("reflection-screen");
   reflectionScreen.innerHTML = `
     <div class="success-message">
-      <h2>🎉 Thank You for Your Reflection!</h2>
+      <h2>🎉 Thank You, ${playerName}!</h2>
       <p>Your insights have been saved and will help you remember this important moment in your journey.</p>
       
       <div class="reflection-summary">
@@ -378,14 +401,13 @@ function submitReflection() {
           <li>Apply the principles you've learned</li>
           <li>Share your testimony with others</li>
           <li>Trust in the Lord's promises</li>
-          <li>Review your reflections regularly</li>
+          <li>Listening to the Living Prophets</li>
         </ul>
       </div>
       
       <div class="action-buttons">
         <button onclick="submitReflectionToEmail()" class="primary-btn">📤 Submit Reflection</button>
         <button onclick="viewAllReflections()" class="secondary-btn">📖 View All Reflections</button>
-        <button onclick="clearAllReflections()" class="secondary-btn">🗑️ Clear All Reflections</button>
         <button onclick="window.location.reload()" class="primary-btn">🔄 Play Again</button>
       </div>
     </div>
@@ -402,57 +424,47 @@ function submitReflectionToEmail() {
     return;
   }
   
-  // Create email content
-  const emailData = {
-    to_email: "dandyalditya@go.byuh.edu",
-    subject: "New Game Reflection Submitted - Catch the Book of Mormon",
-    message: `
-Hello,
-
-Someone has completed the "Catch the Book of Mormon" game and submitted their reflection.
-
-Game Details:
-- Date: ${latestReflection.date}
-- Time: ${latestReflection.time}
-- Game Score: ${latestReflection.score} (${latestReflection.booksCaught} books caught)
-
-Player's Reflection:
-
-1. How has studying the Book of Mormon blessed your life?
-${latestReflection.blessings}
-
-2. What would your life be like without the Book of Mormon?
-${latestReflection.lifeWithout}
-
-3. What specific principle or teaching has impacted you most?
-${latestReflection.principle}
-
-This reflection was submitted through the interactive "Catch the Book of Mormon" game.
-
-Best regards,
-Your Game Notification System
-    `.trim()
-  };
-
+  // Create Google Forms submission URL
+  const formUrl = "https://docs.google.com/forms/d/YOUR_FORM_ID/formResponse";
+  
+  // Prepare form data
+  const formData = new FormData();
+  formData.append("entry.0000000000", latestReflection.name); // Player Name
+  formData.append("entry.1234567890", latestReflection.date); // Date
+  formData.append("entry.0987654321", latestReflection.time); // Time
+  formData.append("entry.1111111111", latestReflection.score.toString()); // Score
+  formData.append("entry.2222222222", latestReflection.booksCaught.toString()); // Books caught
+  formData.append("entry.3333333333", latestReflection.blessings); // Blessings reflection
+  formData.append("entry.4444444444", latestReflection.lifeWithout); // Life without BOM
+  formData.append("entry.5555555555", latestReflection.principle); // Key principle
+  
   // Show loading message
-  const submitButton = document.querySelector('.primary-btn');
-  const originalText = submitButton.textContent;
-  submitButton.textContent = "📧 Sending...";
-  submitButton.disabled = true;
+  const submitButton = document.querySelector('button[onclick="submitReflectionToEmail()"]');
+  if (submitButton) {
+    const originalText = submitButton.textContent;
+    submitButton.textContent = "📧 Sending...";
+    submitButton.disabled = true;
 
-  // Send email using EmailJS
-  emailjs.send('service_id', 'template_id', emailData)
-    .then(function(response) {
-      console.log('SUCCESS!', response.status, response.text);
-      alert("✅ Reflection sent successfully to your email!");
+    // Submit to Google Forms
+    fetch(formUrl, {
+      method: 'POST',
+      body: formData,
+      mode: 'no-cors'
+    })
+    .then(() => {
+      alert("✅ Reflection submitted successfully! You'll receive an email notification.");
       submitButton.textContent = originalText;
       submitButton.disabled = false;
-    }, function(error) {
-      console.log('FAILED...', error);
-      alert("❌ Failed to send email. Please try again or contact support.");
+    })
+    .catch((error) => {
+      console.log('Error:', error);
+      alert("❌ Failed to submit. Please try again.");
       submitButton.textContent = originalText;
       submitButton.disabled = false;
     });
+  } else {
+    alert("✅ Reflection submitted successfully! You'll receive an email notification.");
+  }
 }
 
 // View all reflections function
@@ -466,6 +478,7 @@ function viewAllReflections() {
   
   let reflectionsHTML = `
     <div class="reflections-history">
+      <button onclick="clearAllReflections()" class="admin-clear-btn">🗑️ Clear All</button>
       <h2>📚 Your Reflection History</h2>
       <p>Here are all your reflections from playing this game:</p>
   `;
@@ -473,7 +486,8 @@ function viewAllReflections() {
   reflections.reverse().forEach((reflection, index) => {
     reflectionsHTML += `
       <div class="reflection-entry">
-        <h3>Reflection #${reflections.length - index} - ${reflection.date}</h3>
+        <h3>Reflection #${reflections.length - index} - ${reflection.name} (${reflection.date})</h3>
+        <p><strong>Player:</strong> ${reflection.name}</p>
         <p><strong>Score:</strong> ${reflection.score} (${reflection.booksCaught} books caught)</p>
         <p><strong>Blessings:</strong> ${reflection.blessings}</p>
         <p><strong>Life Without BOM:</strong> ${reflection.lifeWithout}</p>
@@ -485,7 +499,6 @@ function viewAllReflections() {
   reflectionsHTML += `
       <div class="action-buttons">
         <button onclick="restoreReflectionScreen()" class="primary-btn">← Back to Reflection</button>
-        <button onclick="clearAllReflections()" class="secondary-btn">🗑️ Clear All Reflections</button>
       </div>
     </div>
   `;
@@ -571,97 +584,53 @@ const blessings = [
   " Alma 42:31 — Mercy claimeth the penitent.",
   " Alma 43:1 — The sons of Alma did go forth among the people.",
   " Alma 46:12 — In memory of our God, our religion, and freedom.",
-  " Alma 48:17 — If all men had been, and were, and ever would be like unto Moroni.",
-  " Alma 50:23 — The people of Nephi did multiply and spread.",
+  " Alma 48:17 — If all men had been like unto Moroni, the powers of hell would have been shaken forever.",
+  " Alma 50:23 — There never was a happier time among the people of Nephi.",
   " Alma 56:47 — They had been taught by their mothers.",
-  " Alma 57:21 — They were firm and undaunted.",
-  " Alma 58:11 — We trust God will deliver us.",
+  " Alma 57:21 — They did obey and observe to perform every word with exactness.",
+  " Alma 58:11 — The Lord our God did visit us with assurances.",
   " Alma 60:23 — The Lord will not suffer that the words shall not be verified.",
   " Alma 61:21 — The Lord will bless us and deliver us.",
+  " Helaman 3:29 — The word of God is quick and powerful.",
   " Helaman 3:35 — Sanctification cometh because of their yielding their hearts unto God.",
-  " Helaman 5:12 — Remember, remember that it is upon the rock of our Redeemer.",
+  " Helaman 5:12 — Build your foundation upon the rock of our Redeemer.",
   " Helaman 6:3 — The people of the church did have great joy.",
   " Helaman 7:28 — Blessed are they who will repent and turn unto me.",
   " Helaman 8:15 — Behold, I testify unto you that I do know.",
-  " Helaman 10:5 — Thou art blessed, Alma.",
+  " Helaman 10:5 — Thou art blessed, Nephi, because of thy unwearyingness.",
   " Helaman 12:1 — The Lord in his great infinite goodness doth bless and prosper.",
-  " Helaman 13:38 — But behold, your days of probation are past.",
-  " Helaman 14:30 — And now remember, remember, my brethren.",
-  " Helaman 15:7 — Behold, I say unto you that the good shepherd doth call after you.",
-  " Helaman 16:25 — And thus ended the eighty and sixth year.",
+  " Helaman 13:38 — Your days of probation are past.",
+  " Helaman 14:30 — Ye are permitted to act for yourselves.",
+  " Helaman 15:7 — The good shepherd doth call after you.",
   " 3 Nephi 1:13 — On the morrow come I into the world.",
   " 3 Nephi 5:13 — Behold, I am a disciple of Jesus Christ.",
-  " 3 Nephi 9:14 — Yea, verily I say unto you, if ye will come unto me.",
-  " 3 Nephi 11:7 — Behold my Beloved Son, in whom I am well pleased.",
+  " 3 Nephi 9:14 — If ye will come unto me I will show unto you your weakness.",
+  " 3 Nephi 11:11 — I have drunk out of that bitter cup which the Father hath given me.",
+  " 3 Nephi 11:29 — He that hath the spirit of contention is not of me.",
   " 3 Nephi 12:3 — Blessed are the poor in spirit who come unto me.",
-  " 3 Nephi 13:33 — But seek ye first the kingdom of God.",
-  " 3 Nephi 14:7 — Ask, and it shall be given unto you.",
-  " 3 Nephi 15:9 — Behold, I am the law, and the light.",
-  " 3 Nephi 16:20 — And I will remember the covenant which I have made.",
-  " 3 Nephi 17:3 — Therefore, go ye unto your homes, and ponder upon the things.",
-  " 3 Nephi 18:11 — And this shall ye always do to those who repent.",
-  " 3 Nephi 19:9 — And they did pray for that which they most desired.",
-  " 3 Nephi 20:35 — And then shall the work of the Father commence.",
-  " 3 Nephi 21:9 — For in that day, for my sake shall the Father work a work.",
-  " 3 Nephi 22:7 — For a small moment have I forsaken thee.",
-  " 3 Nephi 23:1 — And now, behold, I say unto you, that ye ought to search these things.",
-  " 3 Nephi 24:10 — Bring ye all the tithes into the storehouse.",
-  " 3 Nephi 25:6 — And he shall turn the heart of the fathers to the children.",
-  " 3 Nephi 26:9 — And when they shall have received this.",
-  " 3 Nephi 27:21 — Verily, verily, I say unto you, this is my gospel.",
-  " 3 Nephi 28:9 — And ye shall never endure the pains of death.",
-  " 3 Nephi 29:6 — Turn, all ye Gentiles, from your wicked ways.",
-  " 3 Nephi 30:2 — Turn, all ye Gentiles, from your wicked ways.",
-  " 4 Nephi 1:15 — And it came to pass that there was no contention.",
-  " 4 Nephi 1:16 — And there were no envyings, nor strifes.",
-  " Mormon 1:15 — And I, being fifteen years of age.",
-  " Mormon 2:19 — And wo is me because of their wickedness.",
-  " Mormon 3:12 — Behold, I had led them, notwithstanding their wickedness.",
-  " Mormon 4:5 — And it came to pass that the Lamanites did come against us.",
-  " Mormon 5:24 — And now behold, I would speak somewhat unto the remnant.",
-  " Mormon 6:17 — O ye fair ones, how could ye have departed from the ways of the Lord.",
-  " Mormon 7:10 — And ye will also know that ye are a remnant of the seed of Jacob.",
-  " Mormon 8:35 — Behold, I speak unto you as if ye were present.",
-  " Mormon 9:31 — Condemn me not because of mine imperfection.",
-  " Ether 1:33 — Which Jared came forth with his brother and their families.",
-  " Ether 2:12 — Behold, this is a choice land.",
-  " Ether 3:5 — Behold, O Lord, thou canst do this.",
-  " Ether 4:19 — And blessed is he that is found faithful.",
-  " Ether 5:4 — And in the mouth of three witnesses shall these things be established.",
-  " Ether 6:12 — And they did land upon the shore of the promised land.",
-  " Ether 7:27 — And the people began to be very numerous.",
-  " Ether 8:19 — And now I, Moroni, do not write the manner of their oaths.",
-  " Ether 9:22 — And they did have silks, and fine-twined linen.",
-  " Ether 10:28 — And there was no poor among them.",
-  " Ether 11:23 — And the Lord said unto the brother of Jared.",
-  " Ether 12:4 — Wherefore, whoso believeth in God might with surety hope.",
-  " Ether 12:6 — And now, I, Moroni, would speak somewhat concerning these things.",
-  " Ether 12:27 — And if men come unto me I will show unto them their weakness.",
-  " Ether 12:41 — And what is it that ye shall hope for?",
-  " Ether 13:4 — Behold, Ether saw the days of Christ.",
-  " Ether 14:25 — And it came to pass that they fought for the space of many days.",
-  " Ether 15:34 — And it came to pass that the army of Coriantumr did pitch their tents.",
-  " Moroni 1:4 — Therefore I will write and hide up the records in the earth.",
-  " Moroni 2:2 — And Jesus called his little children.",
-  " Moroni 3:4 — And after this manner did they ordain priests and teachers.",
-  " Moroni 4:3 — O God, the Eternal Father, we ask thee in the name of thy Son.",
-  " Moroni 5:2 — The manner of administering the wine.",
-  " Moroni 6:9 — And their meetings were conducted by the church.",
-  " Moroni 7:3 — And I, Moroni, write a few of the words of my father.",
-  " Moroni 7:12 — Wherefore, all things which are good cometh of God.",
-  " Moroni 7:16 — For behold, the Spirit of Christ is given to every man.",
-  " Moroni 7:33 — And Christ hath said: If ye will have faith in me.",
-  " Moroni 7:45 — And charity suffereth long, and is kind.",
-  " Moroni 7:48 — Wherefore, my beloved brethren, pray unto the Father.",
-  " Moroni 8:8 — Listen to the words of Christ, your Redeemer.",
-  " Moroni 8:17 — I am filled with charity, which is everlasting love.",
-  " Moroni 8:26 — And the remission of sins bringeth meekness.",
-  " Moroni 9:6 — And now, my beloved son, notwithstanding their hardness.",
-  " Moroni 9:25 — My son, be faithful in Christ.",
-  " Moroni 10:4 — And when ye shall receive these things, I would exhort you.",
-  " Moroni 10:5 — And by the power of the Holy Ghost ye may know the truth.",
-  " Moroni 10:32 — Yea, come unto Christ, and be perfected in him.",
-  " Moroni 10:33 — And then shall ye know that I have seen Jesus.",
+  " 3 Nephi 13:33 — Seek ye first the kingdom of God.",
+  " 3 Nephi 17:3 — Ponder upon the things which I have said.",
+  " 3 Nephi 18:24 — Hold up your light that it may shine unto the world.",
+  " 3 Nephi 19:25 — His countenance did smile upon them.",
+  " 3 Nephi 27:21 — This is my gospel.",
+  " 3 Nephi 27:27 — What manner of men ought ye to be? Even as I am.",
+  " 4 Nephi 1:15 — There was no contention in the land.",
+  " Mormon 1:15 — I was visited of the Lord, and tasted and knew of the goodness of Jesus.",
+  " Mormon 2:19 — My heart did sorrow because of their wickedness.",
+  " Mormon 3:12 — I did stand as an idle witness.",
+  " Mormon 5:24 — I would speak somewhat unto the remnant.",
+  " Mormon 9:27 — Doubt not, but be believing.",
+  " Ether 2:12 — This is a choice land.",
+  " Ether 3:14 — I am he who was prepared from the foundation of the world.",
+  " Ether 12:4 — Whoso believeth in God might with surety hope.",
+  " Ether 12:27 — If men come unto me I will show unto them their weakness.",
+  " Ether 12:41 — Seek this Jesus of whom the prophets and apostles have written.",
+  " Moroni 7:45 — Charity suffereth long, and is kind.",
+  " Moroni 7:48 — Pray unto the Father with all the energy of heart.",
+  " Moroni 8:16 — Perfect love casteth out all fear.",
+  " Moroni 9:6 — Let us labor diligently.",
+  " Moroni 10:4 — Ask God... he will manifest the truth of it unto you.",
+  " Moroni 10:32 — Come unto Christ, and be perfected in him.",
 ];
 
 const missed = [
@@ -678,13 +647,15 @@ function randomMissed() {
   return missed[Math.floor(Math.random() * missed.length)];
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  // Show "How to Play" popup first
+  document.getElementById("how-to-play").style.display = "flex";
+  detectInstructions();
+});
+
 document.getElementById("howto-continue").addEventListener("click", () => {
   document.getElementById("how-to-play").style.display = "none";
   document.getElementById("start-screen").style.display = "block";
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  detectInstructions();
 });
 
 // Unified speed function for both fall and drop speeds

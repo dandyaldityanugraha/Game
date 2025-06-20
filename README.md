@@ -2,62 +2,81 @@
 
 An interactive game that teaches about the importance of the Book of Mormon through gameplay and reflection.
 
-## Email Setup Instructions
+## Email Notification Setup (Google Forms - Easiest Method)
 
-To enable automatic email notifications when users submit reflections, follow these steps:
+To get email notifications when users submit reflections, follow these steps:
 
-### 1. Create EmailJS Account
-1. Go to [EmailJS.com](https://www.emailjs.com/)
-2. Sign up for a free account
-3. Verify your email address
+### 1. Create Google Form
+1. Go to [Google Forms](https://forms.google.com)
+2. Create a new form titled "Game Reflection Submissions"
+3. Add these questions:
+   - **Player Name** (Short answer)
+   - **Date** (Short answer)
+   - **Time** (Short answer) 
+   - **Game Score** (Short answer)
+   - **Books Caught** (Short answer)
+   - **Blessings Reflection** (Long answer)
+   - **Life Without BOM** (Long answer)
+   - **Key Principle** (Long answer)
 
-### 2. Set Up Email Service
-1. In EmailJS dashboard, go to "Email Services"
-2. Click "Add New Service"
-3. Choose "Gmail" (or your preferred email provider)
-4. Connect your email account (dandyalditya@go.byuh.edu)
-5. Note down the Service ID (e.g., "service_abc123")
+### 2. Enable Email Notifications
+1. Click the **Responses** tab
+2. Click the **three dots** menu (⋮)
+3. Select **Get email notifications for new responses**
+4. Enter your email: `dandyalditya@go.byuh.edu`
+5. Save settings
 
-### 3. Create Email Template
-1. Go to "Email Templates"
-2. Click "Create New Template"
-3. Name it "Game Reflection Notification"
-4. Set up the template with these variables:
-   - `{{to_email}}` - recipient email
-   - `{{subject}}` - email subject
-   - `{{message}}` - email body
-5. Note down the Template ID (e.g., "template_xyz789")
+### 3. Get Form ID and Entry IDs
+1. Click **Send** button
+2. Copy the form URL
+3. Extract the form ID from the URL: `https://docs.google.com/forms/d/FORM_ID_HERE/formResponse`
+4. To get entry IDs:
+   - Right-click on each question → **Inspect**
+   - Look for `entry.XXXXXXXXX` in the HTML
+   - Note down each entry ID
 
-### 4. Get Your Public Key
-1. Go to "Account" → "API Keys"
-2. Copy your Public Key
-
-### 5. Update the Code
-Replace the placeholders in `index.html`:
-- Replace `YOUR_PUBLIC_KEY_HERE` with your actual public key
-- Replace `service_id` in `script.js` with your service ID
-- Replace `template_id` in `script.js` with your template ID
+### 4. Update the Code
+Replace the placeholders in `script.js`:
+- Replace `YOUR_FORM_ID` with your actual form ID
+- Replace the entry IDs (like `entry.0000000000`) with your actual entry IDs
 
 ### Example:
 ```javascript
-// In index.html
-emailjs.init("public_key_here");
-
-// In script.js
-emailjs.send('service_abc123', 'template_xyz789', emailData)
+const formUrl = "https://docs.google.com/forms/d/1ABC123DEF456/formResponse";
+formData.append("entry.0000000000", latestReflection.name); // Player Name
+formData.append("entry.1234567890", latestReflection.date); // Date
 ```
+
+## Alternative Methods
+
+### Option 2: Formspree (Also Easy)
+1. Go to [Formspree.io](https://formspree.io)
+2. Create account and form
+3. Get form endpoint
+4. Update code to use Formspree instead
+
+### Option 3: Netlify Forms (If hosting on Netlify)
+1. Add `netlify` attribute to form
+2. Netlify automatically handles submissions
+3. Get email notifications in Netlify dashboard
+
+### Option 4: Simple Analytics
+1. Add Google Analytics to track page views
+2. Set up goals for form submissions
+3. Get notifications when goals are completed
 
 ## How It Works
 - When a user completes the game and submits their reflection
-- The reflection is saved locally and sent directly to your email
-- You'll receive a notification with the user's game score and reflection answers
-- No email client required on the user's side
+- The reflection is automatically submitted to your Google Form
+- You'll receive an email notification with all the reflection details including the player's name
+- All submissions are also saved in Google Sheets for easy viewing
 
 ## Features
 - Interactive gameplay with character selection
 - Progressive difficulty based on score
 - Spiritual messages and blessings
 - Reflection prompts for deeper learning
+- Player name identification
 - Email notifications for all submissions
 - Local storage for reflection history
 - Mobile-responsive design
