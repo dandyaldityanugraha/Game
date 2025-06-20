@@ -1,75 +1,34 @@
-# Catch the Book of Mormon Game
+# Catch the Book of Mormon
 
-An interactive game that teaches about the importance of the Book of Mormon through gameplay and reflection.
+This project is a simple, interactive game built as a final project for a religion course. It combines classic arcade gameplay with a meaningful spiritual reflection.
 
-## Email Notification Setup (Google Forms - Easiest Method)
+## What Is This Game?
 
-To get email notifications when users submit reflections, follow these steps:
+"Catch the Book of Mormon" is a straightforward game where the player's goal is to move a character left and right to catch falling copies of the Book of Mormon. The game is designed to be easy to learn and play. After missing three books, the game ends and transitions to a special reflection screen.
 
-### 1. Create Google Form
-1. Go to [Google Forms](https://forms.google.com)
-2. Create a new form titled "Game Reflection Submissions"
-3. Add these questions:
-   - **Player Name** (Short answer)
-   - **Date** (Short answer)
-   - **Time** (Short answer) 
-   - **Game Score** (Short answer)
-   - **Books Caught** (Short answer)
-   - **Blessings Reflection** (Long answer)
-   - **Life Without BOM** (Long answer)
-   - **Key Principle** (Long answer)
+The focus is not on achieving a high score, but on the experience that follows the gameplay.
 
-### 2. Enable Email Notifications
-1. Click the **Responses** tab
-2. Click the **three dots** menu (⋮)
-3. Select **Get email notifications for new responses**
-4. Enter your email: `dandyalditya@go.byuh.edu`
-5. Save settings
+## The Purpose of This Project
 
-### 3. Get Form ID and Entry IDs
-1. Click **Send** button
-2. Copy the form URL
-3. Extract the form ID from the URL: `https://docs.google.com/forms/d/FORM_ID_HERE/formResponse`
-4. To get entry IDs:
-   - Right-click on each question → **Inspect**
-   - Look for `entry.XXXXXXXXX` in the HTML
-   - Note down each entry ID
+The main purpose of this game is to provide an interactive and engaging way for players to think about the importance of the Book of Mormon in their lives. In our fast-paced world, it can be easy to let the scriptures "fall" past us. This game uses that simple metaphor to encourage a moment of introspection.
 
-### 4. Update the Code
-Replace the placeholders in `script.js`:
-- Replace `YOUR_FORM_ID` with your actual form ID
-- Replace the entry IDs (like `entry.0000000000`) with your actual entry IDs
+At the end of each game, players are invited to answer a few questions about their personal relationship with the scriptures, turning a simple game into a tool for testimony and self-reflection.
 
-### Example:
-```javascript
-const formUrl = "https://docs.google.com/forms/d/1ABC123DEF456/formResponse";
-formData.append("entry.0000000000", latestReflection.name); // Player Name
-formData.append("entry.1234567890", latestReflection.date); // Date
-```
+## Why I Created This Game
 
-## Alternative Methods
+I built this game as my final project for my REL 122: Book of Mormon II class. My goal was to create something more than just a presentation or an essay; I wanted to build an *experience* that connects digital interaction with personal faith.
 
-### Option 2: Formspree (Also Easy)
-1. Go to [Formspree.io](https://formspree.io)
-2. Create account and form
-3. Get form endpoint
-4. Update code to use Formspree instead
+This project is a representation of my journey this semester in studying the Book of Mormon. It's my attempt to use modern skills to share a timeless message and to create a unique way for others to consider the impact of this sacred book on their own lives.
 
-### Option 3: Netlify Forms (If hosting on Netlify)
-1. Add `netlify` attribute to form
-2. Netlify automatically handles submissions
-3. Get email notifications in Netlify dashboard
+## Automatic Email Notifications
 
-### Option 4: Simple Analytics
-1. Add Google Analytics to track page views
-2. Set up goals for form submissions
-3. Get notifications when goals are completed
+When a player completes a game and submits their reflection, an email notification is automatically sent to the administrator.
 
-## How It Works
-- When a user completes the game and submits their reflection
-- The reflection is automatically submitted to your Google Form
-- You'll receive an email notification with all the reflection details including the player's name
-- All submissions are also saved in Google Sheets for easy viewing
+- **No Setup Needed:** This system is built-in and requires no configuration.
+- **Instant Alerts:** You will receive an email immediately after a reflection is submitted.
+- **Content:** The email will inform you of the submission and include the player's name. To see the full reflection details, you can open the game and use the "View All Reflections" feature.
+
+This ensures you are always aware of how people are interacting with your project.
 
 ## Features
 - Interactive gameplay with character selection

@@ -369,6 +369,9 @@ function submitReflection() {
   allReflections.push(reflections);
   localStorage.setItem("bookOfMormonReflections", JSON.stringify(allReflections));
   
+  // Automatically send a private notification
+  sendInstantNotification(playerName);
+
   // Show success message with personal insights
   const reflectionScreen = document.getElementById("reflection-screen");
   reflectionScreen.innerHTML = `
@@ -406,7 +409,6 @@ function submitReflection() {
       </div>
       
       <div class="action-buttons">
-        <button onclick="submitReflectionToEmail()" class="primary-btn">📤 Submit Reflection</button>
         <button onclick="viewAllReflections()" class="secondary-btn">📖 View All Reflections</button>
         <button onclick="window.location.reload()" class="primary-btn">🔄 Play Again</button>
       </div>
@@ -414,57 +416,21 @@ function submitReflection() {
   `;
 }
 
-// Submit reflection to email
-function submitReflectionToEmail() {
-  const reflections = JSON.parse(localStorage.getItem("bookOfMormonReflections") || "[]");
-  const latestReflection = reflections[reflections.length - 1];
+// Sends a private, real-time email notification to the administrator
+function sendInstantNotification(playerName) {
+  const subject = `New Reflection from ${playerName}!`;
+  const message = `${playerName} just submitted a reflection in 'Catch the Book of Mormon'.\n\nYou can view all submitted reflections by opening the game and clicking "View All Reflections" on the end screen.`;
   
-  if (!latestReflection) {
-    alert("No reflection found. Please complete the reflection questions first.");
-    return;
-  }
-  
-  // Create Google Forms submission URL
-  const formUrl = "https://docs.google.com/forms/d/YOUR_FORM_ID/formResponse";
-  
-  // Prepare form data
-  const formData = new FormData();
-  formData.append("entry.0000000000", latestReflection.name); // Player Name
-  formData.append("entry.1234567890", latestReflection.date); // Date
-  formData.append("entry.0987654321", latestReflection.time); // Time
-  formData.append("entry.1111111111", latestReflection.score.toString()); // Score
-  formData.append("entry.2222222222", latestReflection.booksCaught.toString()); // Books caught
-  formData.append("entry.3333333333", latestReflection.blessings); // Blessings reflection
-  formData.append("entry.4444444444", latestReflection.lifeWithout); // Life without BOM
-  formData.append("entry.5555555555", latestReflection.principle); // Key principle
-  
-  // Show loading message
-  const submitButton = document.querySelector('button[onclick="submitReflectionToEmail()"]');
-  if (submitButton) {
-    const originalText = submitButton.textContent;
-    submitButton.textContent = "📧 Sending...";
-    submitButton.disabled = true;
-
-    // Submit to Google Forms
-    fetch(formUrl, {
-      method: 'POST',
-      body: formData,
-      mode: 'no-cors'
-    })
-    .then(() => {
-      alert("✅ Reflection submitted successfully! You'll receive an email notification.");
-      submitButton.textContent = originalText;
-      submitButton.disabled = false;
-    })
-    .catch((error) => {
-      console.log('Error:', error);
-      alert("❌ Failed to submit. Please try again.");
-      submitButton.textContent = originalText;
-      submitButton.disabled = false;
-    });
-  } else {
-    alert("✅ Reflection submitted successfully! You'll receive an email notification.");
-  }
+  fetch("https://ntfy.sh/catch-the-bom-dandy-reflections-2024", {
+    method: 'POST',
+    body: message,
+    headers: {
+      'Title': subject,
+      'Email': 'dandyalditya@go.byuh.edu', // Your email address here
+      'Priority': 'high',
+      'Tags': 'email'
+    }
+  }).catch(error => console.error('Notification Error:', error));
 }
 
 // View all reflections function
@@ -478,7 +444,7 @@ function viewAllReflections() {
   
   let reflectionsHTML = `
     <div class="reflections-history">
-      <button onclick="clearAllReflections()" class="admin-clear-btn">🗑️ Clear All</button>
+      <button onclick="clearAllReflections()" class="admin-clear-btn">🗑️ Clear</button>
       <h2>📚 Your Reflection History</h2>
       <p>Here are all your reflections from playing this game:</p>
   `;
