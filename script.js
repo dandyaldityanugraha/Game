@@ -402,9 +402,11 @@ function submitReflectionToEmail() {
     return;
   }
   
-  // Create email content for notification
-  const subject = "New Game Reflection Submitted - Catch the Book of Mormon";
-  const body = `
+  // Create email content
+  const emailData = {
+    to_email: "dandyalditya@go.byuh.edu",
+    subject: "New Game Reflection Submitted - Catch the Book of Mormon",
+    message: `
 Hello,
 
 Someone has completed the "Catch the Book of Mormon" game and submitted their reflection.
@@ -416,7 +418,7 @@ Game Details:
 
 Player's Reflection:
 
-1. How has studying the Book of Mormon blessed your life this semester?
+1. How has studying the Book of Mormon blessed your life?
 ${latestReflection.blessings}
 
 2. What would your life be like without the Book of Mormon?
@@ -429,14 +431,28 @@ This reflection was submitted through the interactive "Catch the Book of Mormon"
 
 Best regards,
 Your Game Notification System
-  `;
-  
-  // Open email client with pre-filled content (sending to your email for notification)
-  const mailtoLink = `mailto:dandyalditya@go.byuh.edu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.open(mailtoLink);
-  
-  // Show confirmation
-  alert("Email notification opened! This will send you a notification about the submitted reflection. If your email client didn't open, you can copy the content and send it manually.");
+    `.trim()
+  };
+
+  // Show loading message
+  const submitButton = document.querySelector('.primary-btn');
+  const originalText = submitButton.textContent;
+  submitButton.textContent = "📧 Sending...";
+  submitButton.disabled = true;
+
+  // Send email using EmailJS
+  emailjs.send('service_id', 'template_id', emailData)
+    .then(function(response) {
+      console.log('SUCCESS!', response.status, response.text);
+      alert("✅ Reflection sent successfully to your email!");
+      submitButton.textContent = originalText;
+      submitButton.disabled = false;
+    }, function(error) {
+      console.log('FAILED...', error);
+      alert("❌ Failed to send email. Please try again or contact support.");
+      submitButton.textContent = originalText;
+      submitButton.disabled = false;
+    });
 }
 
 // View all reflections function
@@ -673,7 +689,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Unified speed function for both fall and drop speeds
 function getSpeed(score) {
-  // Adjusted for 100 points per book - much more gradual progression
   if (score >= 2000) return 1200;
   if (score >= 1500) return 1400;
   if (score >= 1200) return 1600;
@@ -685,5 +700,5 @@ function getSpeed(score) {
   if (score >= 300) return 2800;
   if (score >= 200) return 3000;
   if (score >= 100) return 3200;
-  return 4000; // Start very slow - 4 seconds
+  return 4000; 
 }
