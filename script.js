@@ -542,7 +542,6 @@ function restoreReflectionScreen() {
 const blessings = [
   " Alma 37:6 — Small and simple things bring great things.",
   " Mosiah 2:41 — Obedience brings joy.",
-  " 2 Nephi 2:25 — Men are that they might have joy.",
   " Alma 29:9 — I know that which the Lord hath commanded me.",
   " Alma 30:44 — All things denote there is a God.",
   " Alma 32:21 — Faith is not to have a perfect knowledge.",
