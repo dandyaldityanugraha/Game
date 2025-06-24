@@ -296,7 +296,7 @@ function endGame() {
         <p><strong>Your Name:</strong></p>
         <input type="text" id="player-name" placeholder="Enter your name..." style="width: 100%; padding: 10px; margin-bottom: 15px; border: 2px solid #9c27b0; border-radius: 5px; font-family: 'Press Start 2P', monospace; font-size: 12px;">
         
-        <p><strong>How has studying the Book of Mormon blessed your life this semester?</strong></p>
+        <p><strong>How has studying the Book of Mormon blessed your life?</strong></p>
         <textarea id="reflection-input" rows="4" cols="50" placeholder="Share your thoughts about the blessings you've experienced..."></textarea>
         
         <p><strong>What would your life be like without the Book of Mormon?</strong></p>
