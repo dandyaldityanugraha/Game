@@ -230,7 +230,7 @@ button {
     top: 0px;
   }
   to {
-    top: 500px;
+    top: var(--fall-end, 500px);
   }
 }
 

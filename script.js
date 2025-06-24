@@ -181,12 +181,17 @@ function dropBook() {
   const book = document.createElement("div");
   book.classList.add("book");
   let fallSpeed = getSpeed(score);
-  book.style.animation = `fall ${fallSpeed}ms linear`;
   book.innerHTML = `<img src="images/bookofmormon.png" alt="Book of Mormon" class="book-sprite">`;
 
   // Responsive book X position
   let bookX = Math.floor(Math.random() * (getContainerWidth() - getBookWidth()));
   book.style.left = bookX + "px";
+  // Set the CSS variable for the end position
+  const containerHeight = getContainerHeight();
+  const bookHeight = getBookWidth(); // assuming square books
+  book.style.setProperty('--fall-end', (containerHeight - bookHeight) + 'px');
+  book.style.animation = `fall ${fallSpeed}ms linear`;
+
   gameContainer.appendChild(book);
 
   let isHandled = false;
@@ -202,8 +207,8 @@ function dropBook() {
     const containerRect = gameContainer.getBoundingClientRect();
     const bookTop = bookRect.top - containerRect.top;
     const bookBottom = bookRect.bottom - containerRect.top;
-    // Responsive bottom check
-    if (bookBottom >= getContainerHeight() - 10) { // 10px buffer
+    // Responsive bottom check (book at bottom)
+    if (bookBottom >= containerHeight - 2) { // 2px buffer
       isHandled = true;
       clearInterval(checkInterval);
       book.remove();
@@ -227,7 +232,7 @@ function dropBook() {
         handleMiss();
       }
     }
-  }, 50);
+  }, 20);
 
   book.addEventListener("animationend", () => {
     if (!isHandled) {
