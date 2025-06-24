@@ -189,7 +189,8 @@ function dropBook() {
   // Set the CSS variable for the end position
   const containerHeight = getContainerHeight();
   const bookHeight = getBookWidth(); // assuming square books
-  book.style.setProperty('--fall-end', (containerHeight - bookHeight) + 'px');
+  const playerBottomOffset = 10; // matches #player { bottom: 10px; } in CSS
+  book.style.setProperty('--fall-end', (containerHeight - bookHeight - playerBottomOffset) + 'px');
   book.style.animation = `fall ${fallSpeed}ms linear`;
 
   gameContainer.appendChild(book);
@@ -488,7 +489,7 @@ function viewAllReflections() {
   
   reflectionsHTML += `
       <div class="action-buttons">
-        <button onclick="restoreReflectionScreen()" class="primary-btn">← Back to Reflection</button>
+        <button onclick="restoreReflectionScreen()" class="primary-btn">← Play Again</button>
       </div>
     </div>
   `;
