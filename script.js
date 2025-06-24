@@ -167,7 +167,7 @@ function showPopup(message, isBlessing = false) {
 
   const popup = document.getElementById("popup");
   popup.classList.remove("hidden");
-  setTimeout(() => popup.classList.add("hidden"), 4000);
+  setTimeout(() => popup.classList.add("hidden"), 10000);
 }
 
 // Book drop logic
