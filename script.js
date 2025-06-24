@@ -15,6 +15,20 @@ let playerX = 175;
 const moveAmount = 20;
 let lightLevel = 0;
 
+// Utility functions for responsive sizing
+function getContainerWidth() {
+  return gameContainer.offsetWidth;
+}
+function getContainerHeight() {
+  return gameContainer.offsetHeight;
+}
+function getPlayerWidth() {
+  return player.offsetWidth || 50; // fallback
+}
+function getBookWidth() {
+  return 40; // fallback, matches .book width
+}
+
 // Character selection
 function detectInstructions() {
   const instructions = [
@@ -59,7 +73,8 @@ startBtn.addEventListener("click", () => {
 
   score = 0;
   misses = 0;
-  playerX = 175;
+  // Responsive initial player position (centered)
+  playerX = Math.floor((getContainerWidth() - getPlayerWidth()) / 2);
   player.style.left = `${playerX}px`;
 
   updateScoreDisplay();
@@ -70,11 +85,13 @@ startBtn.addEventListener("click", () => {
 // Keyboard movement
 document.addEventListener("keydown", (e) => {
   if (!gameScreen.classList.contains("hidden")) {
+    const maxX = getContainerWidth() - getPlayerWidth();
     if (e.key === "ArrowLeft" && playerX > 0) {
       playerX -= moveAmount;
-    } else if (e.key === "ArrowRight" && playerX < 350) {
+    } else if (e.key === "ArrowRight" && playerX < maxX) {
       playerX += moveAmount;
     }
+    playerX = Math.max(0, Math.min(playerX, maxX));
     player.style.left = `${playerX}px`;
   }
 });
@@ -94,7 +111,7 @@ gameContainer.addEventListener("touchend", () => {
 function moveToTouch(touch) {
   const rect = gameContainer.getBoundingClientRect();
   const relativeX = touch.clientX - rect.left;
-  const clampedX = Math.max(0, Math.min(relativeX - 25, 350));
+  const clampedX = Math.max(0, Math.min(relativeX - getPlayerWidth() / 2, getContainerWidth() - getPlayerWidth()));
   playerX = clampedX;
   player.style.left = `${playerX}px`;
 }
@@ -114,7 +131,7 @@ document.addEventListener("mousemove", (e) => {
   if (isMouseDragging) {
     const rect = gameContainer.getBoundingClientRect();
     const relativeX = e.clientX - rect.left;
-    const clampedX = Math.max(0, Math.min(relativeX - 25, 350));
+    const clampedX = Math.max(0, Math.min(relativeX - getPlayerWidth() / 2, getContainerWidth() - getPlayerWidth()));
     playerX = clampedX;
     player.style.left = `${playerX}px`;
   }
@@ -167,7 +184,8 @@ function dropBook() {
   book.style.animation = `fall ${fallSpeed}ms linear`;
   book.innerHTML = `<img src="images/bookofmormon.png" alt="Book of Mormon" class="book-sprite">`;
 
-  let bookX = Math.floor(Math.random() * 360);
+  // Responsive book X position
+  let bookX = Math.floor(Math.random() * (getContainerWidth() - getBookWidth()));
   book.style.left = bookX + "px";
   gameContainer.appendChild(book);
 
@@ -183,8 +201,9 @@ function dropBook() {
     const playerRect = player.getBoundingClientRect();
     const containerRect = gameContainer.getBoundingClientRect();
     const bookTop = bookRect.top - containerRect.top;
-
-    if (bookTop >= 440) { // When book reaches the bottom area
+    const bookBottom = bookRect.bottom - containerRect.top;
+    // Responsive bottom check
+    if (bookBottom >= getContainerHeight() - 10) { // 10px buffer
       isHandled = true;
       clearInterval(checkInterval);
       book.remove();
