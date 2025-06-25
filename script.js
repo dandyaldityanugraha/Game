@@ -14,19 +14,23 @@ let dropInterval;
 let playerX = 175;
 const moveAmount = 20;
 let lightLevel = 0;
+let gameActive = false;
 
-// Utility functions for responsive sizing
+// Add test mode for collision debugging
+let testMode = false; // Disable test mode
+
+// Utility functions for fixed sizing
 function getContainerWidth() {
-  return gameContainer.offsetWidth;
+  return 400; // Fixed width from CSS
 }
 function getContainerHeight() {
-  return gameContainer.offsetHeight;
+  return 500; // Fixed height from CSS
 }
 function getPlayerWidth() {
-  return player.offsetWidth || 50; // fallback
+  return 50; // Fixed player width from CSS
 }
 function getBookWidth() {
-  return 40; // fallback, matches .book width
+  return 40; // Fixed book width from CSS
 }
 
 // Character selection
@@ -64,6 +68,7 @@ detectInstructions();
 startBtn.addEventListener("click", () => {
   startScreen.style.display = "none";
   gameScreen.classList.remove("hidden");
+  gameActive = true;
 
   // Always start at level 1 background
   gameContainer.classList.remove("bg-level-1", "bg-level-2", "bg-level-3", "bg-level-4");
@@ -73,45 +78,53 @@ startBtn.addEventListener("click", () => {
 
   score = 0;
   misses = 0;
-  // Responsive initial player position (centered)
-  playerX = Math.floor((getContainerWidth() - getPlayerWidth()) / 2);
+  lightLevel = 0;
+  // Fixed initial player position (centered)
+  playerX = 175; // Fixed center position
   player.style.left = `${playerX}px`;
 
   updateScoreDisplay();
   updateHearts();
+  updateBackground();
   startDroppingBooks();
 });
 
 // Keyboard movement
 document.addEventListener("keydown", (e) => {
-  if (!gameScreen.classList.contains("hidden")) {
-    const maxX = getContainerWidth() - getPlayerWidth();
-    if (e.key === "ArrowLeft" && playerX > 0) {
-      playerX -= moveAmount;
-    } else if (e.key === "ArrowRight" && playerX < maxX) {
-      playerX += moveAmount;
-    }
-    playerX = Math.max(0, Math.min(playerX, maxX));
-    player.style.left = `${playerX}px`;
+  if (!gameActive) return;
+  
+  const maxX = 400 - 50; // Fixed container width - player width
+  if (e.key === "ArrowLeft" && playerX > 0) {
+    playerX -= moveAmount;
+  } else if (e.key === "ArrowRight" && playerX < maxX) {
+    playerX += moveAmount;
   }
+  playerX = Math.max(0, Math.min(playerX, maxX));
+  player.style.left = `${playerX}px`;
 });
 
-// Touch movement
+// Touch movement for mobile
 gameContainer.addEventListener("touchstart", (e) => {
+  if (!gameActive) return;
+  e.preventDefault();
   isTouching = true;
   moveToTouch(e.touches[0]);
 });
 gameContainer.addEventListener("touchmove", (e) => {
+  if (!gameActive) return;
+  e.preventDefault();
   if (isTouching) moveToTouch(e.touches[0]);
 });
-gameContainer.addEventListener("touchend", () => {
+gameContainer.addEventListener("touchend", (e) => {
+  if (!gameActive) return;
+  e.preventDefault();
   isTouching = false;
 });
 
 function moveToTouch(touch) {
   const rect = gameContainer.getBoundingClientRect();
   const relativeX = touch.clientX - rect.left;
-  const clampedX = Math.max(0, Math.min(relativeX - getPlayerWidth() / 2, getContainerWidth() - getPlayerWidth()));
+  const clampedX = Math.max(0, Math.min(relativeX - 25, 400 - 50));
   playerX = clampedX;
   player.style.left = `${playerX}px`;
 }
@@ -120,6 +133,7 @@ function moveToTouch(touch) {
 let isMouseDragging = false;
 
 player.addEventListener("mousedown", (e) => {
+  if (!gameActive) return;
   isMouseDragging = true;
 });
 
@@ -128,26 +142,17 @@ document.addEventListener("mouseup", () => {
 });
 
 document.addEventListener("mousemove", (e) => {
-  if (isMouseDragging) {
-    const rect = gameContainer.getBoundingClientRect();
-    const relativeX = e.clientX - rect.left;
-    const clampedX = Math.max(0, Math.min(relativeX - getPlayerWidth() / 2, getContainerWidth() - getPlayerWidth()));
-    playerX = clampedX;
-    player.style.left = `${playerX}px`;
-  }
+  if (!gameActive || !isMouseDragging) return;
+  const rect = gameContainer.getBoundingClientRect();
+  const relativeX = e.clientX - rect.left;
+  const clampedX = Math.max(0, Math.min(relativeX - 25, 400 - 50));
+  playerX = clampedX;
+  player.style.left = `${playerX}px`;
 });
 
 // Score display
 function updateScoreDisplay() {
   scoreDisplay.textContent = score.toString().padStart(6, '0');
-  updateDifficultyIndicator();
-}
-
-// Difficulty indicator
-function updateDifficultyIndicator() {
-  // Update the game title to show difficulty
-  const gameTitle = document.getElementById("game-title");
-  gameTitle.textContent = `🛤️ Life with or without the Book of Mormon`;
 }
 
 // Heart display
@@ -167,115 +172,117 @@ function showPopup(message, isBlessing = false) {
 
   const popup = document.getElementById("popup");
   popup.classList.remove("hidden");
-  setTimeout(() => popup.classList.add("hidden"), 10000);
+  setTimeout(() => popup.classList.add("hidden"), 3000);
 }
 
-// Book drop logic
+// NEW GAME LOGIC - Book dropping and collision detection
 function dropBook() {
-  // Prevents new books from dropping after game over, but before screen transition
-  if (misses >= maxMisses) {
-    clearInterval(dropInterval);
+  if (!gameActive || misses >= maxMisses) {
     return;
   }
 
   const book = document.createElement("div");
   book.classList.add("book");
-  let fallSpeed = getSpeed(score);
   book.innerHTML = `<img src="images/bookofmormon.png" alt="Book of Mormon" class="book-sprite">`;
 
-  // Responsive book X position
-  let bookX = Math.floor(Math.random() * (getContainerWidth() - getBookWidth()));
+  // Random X position for the book
+  const bookX = Math.floor(Math.random() * (400 - 40));
   book.style.left = bookX + "px";
-  // Set the CSS variable for the end position
-  const containerHeight = getContainerHeight();
-  const bookHeight = getBookWidth(); // assuming square books
-  const playerBottomOffset = 10; // matches #player { bottom: 10px; } in CSS
-  book.style.setProperty('--fall-end', (containerHeight - bookHeight - playerBottomOffset) + 'px');
-  book.style.animation = `fall ${fallSpeed}ms linear`;
+  book.style.top = "-40px"; // Start above the container
 
   gameContainer.appendChild(book);
 
-  let isHandled = false;
+  // Animation variables
+  let bookY = -40;
+  const fallSpeed = getSpeed(score);
+  const animationStep = 500 / (fallSpeed / 16); // 60fps animation
 
-  const checkInterval = setInterval(() => {
-    if (isHandled) {
-      clearInterval(checkInterval);
+  // Animation loop
+  function animateBook() {
+    if (!gameActive || !book.parentNode) {
+      return; // Stop if game ended or book removed
+    }
+
+    bookY += animationStep;
+    book.style.top = bookY + "px";
+
+    // Check if book reached the bottom
+    if (bookY >= 450) { // Player is at bottom 10px, so check at 450
+      checkCollision(book, bookX, bookY);
       return;
     }
-    
-    const bookRect = book.getBoundingClientRect();
-    const playerRect = player.getBoundingClientRect();
-    const containerRect = gameContainer.getBoundingClientRect();
-    const bookTop = bookRect.top - containerRect.top;
-    const bookBottom = bookRect.bottom - containerRect.top;
-    // Responsive bottom check (book at bottom)
-    if (bookBottom >= containerHeight - 2) { // 2px buffer
-      isHandled = true;
-      clearInterval(checkInterval);
-      book.remove();
 
-      const playerLeft = playerRect.left - containerRect.left;
-      const playerRight = playerLeft + playerRect.width;
-      const bookLeft = bookRect.left - containerRect.left;
-      const bookCenter = bookLeft + (bookRect.width / 2);
+    // Continue animation
+    requestAnimationFrame(animateBook);
+  }
 
-      if (bookCenter >= playerLeft && bookCenter <= playerRight && bookRect.bottom > playerRect.top) {
-        // CATCH
-        score += 100;
-        if (lightLevel < 4) lightLevel++;
-        updateScoreDisplay();
-        updateBackground();
-        clearInterval(dropInterval);
-        startDroppingBooks();
-        showPopup(randomBlessing(), true);
-      } else {
-        // MISS
-        handleMiss();
-      }
-    }
-  }, 20);
-
-  book.addEventListener("animationend", () => {
-    if (!isHandled) {
-      isHandled = true;
-      handleMiss();
-    }
-    // Clean up book and interval regardless
-    book.remove();
-    clearInterval(checkInterval);
-  });
+  // Start animation
+  requestAnimationFrame(animateBook);
 }
 
-function handleMiss() {
-  misses++;
-  lightLevel = -3;
-  updateHearts();
-  updateBackground();
-  
-  if (misses >= maxMisses) {
-    clearInterval(dropInterval); // Stop more books from falling
-    showPopup("💔 You've missed too many. Game over.");
-    setTimeout(endGame, 2000);
+// NEW COLLISION DETECTION
+function checkCollision(book, bookX, bookY) {
+  // Remove the book from DOM
+  if (book.parentNode) {
+    book.remove();
+  }
+
+  // Check if book overlaps with player
+  const playerLeft = playerX;
+  const playerRight = playerX + 50;
+  const bookLeft = bookX;
+  const bookRight = bookX + 40;
+
+  // Check horizontal overlap
+  const collision = bookRight > playerLeft && bookLeft < playerRight;
+
+  if (collision) {
+    // CATCH!
+    score += 10;
+    lightLevel = Math.min(4, lightLevel + 1); // Increase light level (brighter)
+    updateScoreDisplay();
+    updateBackground();
+    showPopup(randomBlessing(), true);
+    
+    // Restart dropping with new speed (faster)
+    startDroppingBooks();
   } else {
-    showPopup(randomMissed(), false);
+    // MISS!
+    misses++;
+    lightLevel = -3; // Immediately go to darkest level (black background)
+    updateHearts();
+    updateBackground();
+    
+    if (misses >= maxMisses) {
+      gameOver();
+    } else {
+      showPopup(randomMissed(), false);
+    }
   }
 }
 
-// Start dropping
-function startDroppingBooks() {
+// Game over function
+function gameOver() {
+  gameActive = false;
   clearInterval(dropInterval);
-
-  let currentInterval = getSpeed(score);
-  dropInterval = setInterval(() => {
-    if (!gameScreen.classList.contains("hidden")) dropBook();
-  }, currentInterval);
+  showPopup("💔 You've missed too many. Game over.");
+  setTimeout(endGame, 2000);
 }
 
-//Background changing
+// Start dropping books
+function startDroppingBooks() {
+  clearInterval(dropInterval);
+  const interval = getSpeed(score);
+  dropInterval = setInterval(() => {
+    if (gameActive) {
+      dropBook();
+    }
+  }, interval);
+}
+
+// Background changing
 function updateBackground() {
   gameContainer.className = "";
-
-  // Clamp lightLevel between -3 (black) and 4 (white)
   lightLevel = Math.max(-3, Math.min(4, lightLevel));
 
   const classMap = {
@@ -297,7 +304,7 @@ function endGame() {
   gameScreen.classList.add("hidden");
   
   // Calculate insights based on performance
-  const booksCaught = Math.floor(score / 100);
+  const booksCaught = Math.floor(score / 10);
   const personalMessage = getPersonalMessage(booksCaught);
   
   // Update reflection screen with more meaningful content
@@ -365,7 +372,7 @@ function getPersonalMessage(booksCaught) {
   }
 }
 
-// Enhanced reflection submission
+// Enhanced reflection submission using localStorage
 function submitReflection() {
   const playerName = document.getElementById("player-name").value;
   const reflection1 = document.getElementById("reflection-input").value;
@@ -377,7 +384,7 @@ function submitReflection() {
     return;
   }
   
-  // Save reflections to local storage
+  // Save reflections to localStorage
   const reflections = {
     name: playerName,
     date: new Date().toLocaleDateString(),
@@ -386,16 +393,13 @@ function submitReflection() {
     lifeWithout: reflection2,
     principle: reflection3,
     score: score,
-    booksCaught: Math.floor(score / 100)
+    booksCaught: Math.floor(score / 10)
   };
-  
-  // Get existing reflections or create new array
-  let allReflections = JSON.parse(localStorage.getItem("bookOfMormonReflections") || "[]");
-  allReflections.push(reflections);
-  localStorage.setItem("bookOfMormonReflections", JSON.stringify(allReflections));
-  
-  // Automatically send a private notification
-  sendInstantNotification(playerName);
+
+  // Get existing reflections from localStorage
+  let existingReflections = JSON.parse(localStorage.getItem('reflections') || '[]');
+  existingReflections.push(reflections);
+  localStorage.setItem('reflections', JSON.stringify(existingReflections));
 
   // Show success message with personal insights
   const reflectionScreen = document.getElementById("reflection-screen");
@@ -441,121 +445,74 @@ function submitReflection() {
   `;
 }
 
-// Sends a private, real-time email notification to the administrator
-function sendInstantNotification(playerName) {
-  const subject = `New Reflection from ${playerName}!`;
-  const message = `${playerName} just submitted a reflection in 'Catch the Book of Mormon'.\n\nYou can view all submitted reflections by opening the game and clicking "View All Reflections" on the end screen.`;
-  
-  fetch("https://ntfy.sh/catch-the-bom-dandy-reflections-2024", {
-    method: 'POST',
-    body: message,
-    headers: {
-      'Title': subject,
-      'Email': 'dandyalditya@go.byuh.edu', // Your email address here
-      'Priority': 'high',
-      'Tags': 'email'
-    }
-  }).catch(error => console.error('Notification Error:', error));
-}
-
-// View all reflections function
+// View all reflections function using localStorage
 function viewAllReflections() {
-  const reflections = JSON.parse(localStorage.getItem("bookOfMormonReflections") || "[]");
+  const existingReflections = JSON.parse(localStorage.getItem('reflections') || '[]');
   
-  if (reflections.length === 0) {
+  if (existingReflections.length === 0) {
     alert("No reflections found. Complete a game and submit your reflection to see them here!");
     return;
   }
-  
+
   let reflectionsHTML = `
-    <div class="reflections-history">
-      <button onclick="clearAllReflections()" class="admin-clear-btn">🗑️ Clear</button>
-      <h2>📚 Your Reflection History</h2>
-      <p>Here are all your reflections from playing this game:</p>
+    <div class="reflections-header">
+      <h2>📚 Reflection Gallery</h2>
+      <p class="reflection-summary">Total Reflections: <span class="reflection-count">${existingReflections.length}</span></p>
+      <button onclick="clearAllReflections()" class="admin-clear-btn">🗑️ Clear All</button>
+    </div>
+    <div class="reflections-gallery">
   `;
-  
-  reflections.reverse().forEach((reflection, index) => {
+
+  let count = existingReflections.length;
+  existingReflections.reverse().forEach((reflection) => {
     reflectionsHTML += `
-      <div class="reflection-entry">
-        <h3>Reflection #${reflections.length - index} - ${reflection.name} (${reflection.date})</h3>
-        <p><strong>Player:</strong> ${reflection.name}</p>
-        <p><strong>Score:</strong> ${reflection.score} (${reflection.booksCaught} books caught)</p>
-        <p><strong>Blessings:</strong> ${reflection.blessings}</p>
-        <p><strong>Life Without BOM:</strong> ${reflection.lifeWithout}</p>
-        <p><strong>Key Principle:</strong> ${reflection.principle}</p>
+      <div class="reflection-card">
+        <div class="reflection-card-header">
+          <span class="reflection-number">#${count--}</span>
+          <span class="reflection-date">${reflection.date} <span class="reflection-time">${reflection.time || ''}</span></span>
+        </div>
+        <div class="reflection-card-body">
+          <div class="reflection-player"><span class="icon">👤</span> <strong>${reflection.name}</strong></div>
+          <div class="reflection-score"><span class="icon">⭐</span> Score: <span class="highlight">${reflection.score}</span> (<span class="highlight">${reflection.booksCaught}</span> books caught)</div>
+          <div class="reflection-section">
+            <span class="icon">🙏</span> <strong>Blessings:</strong>
+            <p class="reflection-text">${reflection.blessings}</p>
+          </div>
+          <div class="reflection-section">
+            <span class="icon">🌑</span> <strong>Life Without the Book of Mormon:</strong>
+            <p class="reflection-text">${reflection.lifeWithout}</p>
+          </div>
+          <div class="reflection-section">
+            <span class="icon">💡</span> <strong>Most Impactful Principle:</strong>
+            <p class="reflection-text">${reflection.principle}</p>
+          </div>
+        </div>
       </div>
     `;
   });
-  
+
   reflectionsHTML += `
-      <div class="action-buttons">
-        <button onclick="restoreReflectionScreen()" class="primary-btn">← Play Again</button>
-      </div>
+    </div>
+    <div class="action-buttons">
+      <button onclick="restoreReflectionScreen()" class="primary-btn">← Play Again</button>
     </div>
   `;
-  
+
   document.getElementById("reflection-screen").innerHTML = reflectionsHTML;
 }
 
 // Clear all reflections function
 function clearAllReflections() {
-  console.log("Clear all reflections function called");
-  
-  try {
-    const reflections = JSON.parse(localStorage.getItem("bookOfMormonReflections") || "[]");
-    console.log("Found reflections:", reflections.length);
-    
-    if (reflections.length === 0) {
-      const forceClear = confirm("No reflections found in storage. Do you want to clear the storage anyway?");
-      if (forceClear) {
-        localStorage.removeItem("bookOfMormonReflections");
-        console.log("Storage cleared even though no reflections were found");
-        alert("Storage cleared successfully!");
-      }
-      return;
-    }
-    
-    const confirmDelete = confirm(`Are you sure you want to delete all ${reflections.length} reflections? This action cannot be undone.`);
-    
-    if (confirmDelete) {
-      localStorage.removeItem("bookOfMormonReflections");
-      console.log("Reflections cleared from localStorage");
-      alert("All reflections have been cleared successfully!");
-      
-      // If we're on the reflections history page, go back to the main reflection screen
-      const reflectionScreen = document.getElementById("reflection-screen");
-      if (reflectionScreen && reflectionScreen.innerHTML.includes("reflections-history")) {
-        console.log("Returning to main reflection screen");
-        restoreReflectionScreen();
-      } else {
-        console.log("Not on reflections history page, staying on current screen");
-      }
-    } else {
-      console.log("User cancelled deletion");
-    }
-  } catch (error) {
-    console.error("Error in clearAllReflections:", error);
-    alert("An error occurred while clearing reflections. Please try again.");
+  if (confirm("Are you sure you want to clear all reflections? This cannot be undone.")) {
+    localStorage.removeItem('reflections');
+    alert("All reflections have been cleared.");
+    viewAllReflections();
   }
-}
-
-// Test function to check reflections (you can call this in browser console)
-function checkReflections() {
-  const reflections = JSON.parse(localStorage.getItem("bookOfMormonReflections") || "[]");
-  console.log("Current reflections:", reflections);
-  console.log("Number of reflections:", reflections.length);
-  return reflections;
 }
 
 // Restore reflection screen function
 function restoreReflectionScreen() {
-  const originalContent = document.getElementById("reflection-screen").getAttribute("data-original-content");
-  if (originalContent) {
-    document.getElementById("reflection-screen").innerHTML = originalContent;
-  } else {
-    // If no original content, reload the page
-    window.location.reload();
-  }
+  window.location.reload();
 }
 
 // Scripture messages
@@ -649,9 +606,10 @@ document.getElementById("howto-continue").addEventListener("click", () => {
   document.getElementById("start-screen").style.display = "block";
 });
 
-// Unified speed function for both fall and drop speeds
+// Speed function for book dropping - starts slow and gradually increases
 function getSpeed(score) {
-  if (score >= 2000) return 1200;
+  // Start very slow (6000ms = 6 seconds) and gradually speed up
+  if (score >= 2000) return 1200; // Very fast
   if (score >= 1500) return 1400;
   if (score >= 1200) return 1600;
   if (score >= 1000) return 1800;
@@ -661,6 +619,39 @@ function getSpeed(score) {
   if (score >= 400) return 2600;
   if (score >= 300) return 2800;
   if (score >= 200) return 3000;
-  if (score >= 100) return 3200;
-  return 4000; 
+  if (score >= 100) return 3500; // Slower than before
+  return 6000; // Start very slow - 6 seconds between books
+}
+
+if (testMode) {
+  document.addEventListener("DOMContentLoaded", () => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      #player { 
+        background: rgba(255,0,0,0.5) !important; 
+        border: 3px solid red !important; 
+        position: relative !important;
+      }
+      #player::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 120px;
+        height: 120px;
+        border: 2px dashed yellow;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+      }
+      .book { 
+        background: rgba(0,0,255,0.5) !important; 
+        border: 3px solid blue !important; 
+      }
+      #game-container {
+        border: 2px solid green !important;
+      }
+    `;
+    document.head.appendChild(style);
+  });
 }

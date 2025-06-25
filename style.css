@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-/* Mobile-first responsive design */
+/* Fixed size design - no responsive elements */
 * {
   box-sizing: border-box;
 }
@@ -10,8 +10,7 @@
   top: 20%;
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
-  max-width: 500px;
+  width: 500px;
   background: white;
   border: 3px solid #333;
   border-radius: 10px;
@@ -59,7 +58,7 @@ body {
   border: 3px solid #333;
   border-radius: 10px;
   padding: 20px;
-  max-width: 90%;
+  width: 600px;
   text-align: center;
   font-family: 'Press Start 2P', monospace;
   font-size: 12px;
@@ -187,35 +186,39 @@ button {
   border: 4px solid #333;
   overflow: hidden;
   transition: background-color 0.6s ease;
-  touch-action: none;
+  touch-action: none; /* Prevent default touch behaviors */
 }
 
 #player {
   position: absolute;
   bottom: 10px;
   left: 175px;
-  pointer-events: auto;
-  cursor: grab;
-  transition: left 0.2s ease-out;
+  width: 50px;
+  height: 50px;
+  z-index: 10;
+  cursor: pointer; /* Show pointer cursor when hovering */
 }
 
 .player-sprite {
-  width: 50px;
-  height: auto;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
 }
 
 .book {
   position: absolute;
-  top: 0;
+  top: -50px;
   width: 40px;
   height: 40px;
-  transition: top 0.1s linear;
+  z-index: 5;
 }
 
 .book-sprite {
-  width: 30px;
-  height: auto;
+  width: 100%;
+  height: 100%;
   display: block;
+  object-fit: contain;
 }
 
 .popup-book {
@@ -227,10 +230,10 @@ button {
 
 @keyframes fall {
   from {
-    top: 0px;
+    top: -50px;
   }
   to {
-    top: var(--fall-end, 500px);
+    top: var(--fall-end, 450px);
   }
 }
 
@@ -241,7 +244,7 @@ button {
 #reflection-screen {
   font-family: 'Press Start 2P', monospace;
   padding: 30px;
-  max-width: 800px;
+  width: 800px;
   margin: 0 auto;
   text-align: center;
 }
@@ -365,7 +368,6 @@ button {
   justify-content: center;
   gap: 15px;
   margin-top: 25px;
-  flex-wrap: wrap;
 }
 
 .primary-btn, .secondary-btn, .share-btn {
@@ -480,57 +482,6 @@ button {
   background-color: #000000; 
 }
 
-/* Basic mobile responsiveness */
-@media (max-width: 420px) {
-  #game-container, #top-bar {
-    width: 100%;
-  }
-
-  #score-display {
-    font-size: 14px;
-  }
-
-  .popup-content {
-    font-size: 10px;
-    padding: 15px;
-  }
-
-  .char-image {
-    width: 50px;
-  }
-
-  .player-sprite {
-    width: 45px;
-  }
-
-  .book-sprite {
-    width: 25px;
-  }
-
-  #popup {
-    width: 90%;
-    padding: 20px;
-    font-size: 12px;
-    top: 15%;
-  }
-}
-
-@media (max-width: 600px) {
-  .reflection-content {
-    padding: 20px;
-  }
-  
-  .action-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .primary-btn, .secondary-btn, .share-btn {
-    width: 100%;
-    max-width: 250px;
-  }
-}
-
 .reflections-history {
   position: relative;
   background: white;
@@ -601,46 +552,491 @@ button {
   justify-content: center;
 }
 
-/* Desktop enhancements */
-@media (min-width: 900px) {
-  #game-container {
-    width: 600px;
-    height: 750px;
-    margin: 0 auto;
+/* Reflection Gallery Styles */
+.reflections-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.reflections-header h2 {
+  font-size: 2em;
+  margin-bottom: 0.2em;
+  color: #6a1b9a;
+  letter-spacing: 1px;
+}
+.reflection-summary {
+  font-size: 1.1em;
+  margin-bottom: 10px;
+  color: #333;
+}
+.reflection-count {
+  font-weight: bold;
+  color: #4caf50;
+}
+.admin-clear-btn {
+  background: #e57373;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 6px 16px;
+  font-size: 1em;
+  cursor: pointer;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  transition: background 0.2s;
+}
+.admin-clear-btn:hover {
+  background: #c62828;
+}
+
+.reflections-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+.reflection-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(106,27,154,0.10), 0 1.5px 4px rgba(0,0,0,0.08);
+  padding: 22px 28px 18px 28px;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 2px solid #ede7f6;
+}
+.reflection-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(106,27,154,0.18), 0 2px 8px rgba(0,0,0,0.10);
+  border-color: #ce93d8;
+}
+.reflection-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.reflection-number {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #7b1fa2;
+}
+.reflection-date {
+  font-size: 0.95em;
+  color: #888;
+}
+.reflection-time {
+  font-size: 0.9em;
+  color: #b39ddb;
+  margin-left: 4px;
+}
+.reflection-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.reflection-player {
+  font-size: 1.1em;
+  margin-bottom: 2px;
+  color: #512da8;
+}
+.reflection-score {
+  font-size: 1em;
+  margin-bottom: 6px;
+  color: #388e3c;
+}
+.reflection-section {
+  margin-bottom: 7px;
+  background: #f3e5f5;
+  border-radius: 6px;
+  padding: 7px 10px 5px 10px;
+}
+.reflection-section strong {
+  color: #6a1b9a;
+}
+.reflection-text {
+  margin: 3px 0 0 0;
+  font-size: 0.98em;
+  color: #333;
+  line-height: 1.5;
+}
+.icon {
+  margin-right: 6px;
+  font-size: 1.1em;
+  vertical-align: middle;
+}
+
+/* Mobile Responsive Styles for Reflection Screen */
+@media (max-width: 768px) {
+  #reflection-screen {
+    width: 95%;
+    padding: 15px;
   }
+  
+  .reflection-content {
+    padding: 20px;
+  }
+  
+  .reflection-content h2 {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .final-stats p {
+    font-size: 12px;
+  }
+  
+  .highlight {
+    font-size: 14px;
+  }
+  
+  .personal-message h3,
+  .reflection-prompts h3,
+  .scripture-reminder h3 {
+    font-size: 14px;
+  }
+  
+  .personal-message p,
+  .reflection-prompts p,
+  .scripture-reminder p {
+    font-size: 11px;
+  }
+  
+  .reflection-prompts textarea {
+    font-size: 11px;
+    padding: 8px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .primary-btn, .secondary-btn, .share-btn {
+    width: 100%;
+    max-width: 280px;
+    font-size: 11px;
+    padding: 10px 15px;
+  }
+  
+  .success-message {
+    padding: 20px;
+  }
+  
+  .success-message h2 {
+    font-size: 16px;
+  }
+  
+  .success-message p {
+    font-size: 11px;
+  }
+  
+  .final-encouragement h3 {
+    font-size: 12px;
+  }
+  
+  .final-encouragement li {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  #reflection-screen {
+    width: 98%;
+    padding: 10px;
+  }
+  
+  .reflection-content {
+    padding: 15px;
+  }
+  
+  .reflection-content h2 {
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+  
+  .final-stats,
+  .personal-message,
+  .reflection-prompts,
+  .scripture-reminder,
+  .final-encouragement {
+    padding: 15px;
+    margin: 15px 0;
+  }
+  
+  .final-stats p {
+    font-size: 11px;
+  }
+  
+  .highlight {
+    font-size: 12px;
+  }
+  
+  .personal-message h3,
+  .reflection-prompts h3,
+  .scripture-reminder h3 {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .personal-message p,
+  .reflection-prompts p,
+  .scripture-reminder p {
+    font-size: 10px;
+  }
+  
+  .reflection-prompts textarea {
+    font-size: 10px;
+    padding: 6px;
+    margin-bottom: 10px;
+  }
+  
+  .primary-btn, .secondary-btn, .share-btn {
+    font-size: 10px;
+    padding: 8px 12px;
+  }
+  
+  .success-message {
+    padding: 15px;
+  }
+  
+  .success-message h2 {
+    font-size: 14px;
+  }
+  
+  .success-message p {
+    font-size: 10px;
+  }
+  
+  .final-encouragement h3 {
+    font-size: 11px;
+  }
+  
+  .final-encouragement li {
+    font-size: 9px;
+  }
+}
+
+/* Mobile Responsive Styles for Game Screen */
+@media (max-width: 768px) {
+  #game-screen {
+    margin-top: 10px;
+  }
+  
+  #game-title {
+    font-size: 14px;
+    margin: 5px auto 0 auto;
+  }
+  
   #top-bar {
-    width: 600px;
-    margin: 0 auto;
+    width: 90%;
+    max-width: 400px;
+    margin: 5px auto;
+    padding: 0 5px;
   }
-
+  
+  #score-display {
+    font-size: 14px;
+    padding: 8px;
+  }
+  
+  #hearts {
+    font-size: 20px;
+    gap: 8px;
+  }
+  
+  #game-container {
+    width: 90%;
+    max-width: 400px;
+    height: 450px;
+  }
+  
   #player {
-    left: 275px; /* Center player for wider game area */
+    width: 45px;
+    height: 45px;
   }
-
-  .player-sprite {
-    width: 70px;
-  }
-
+  
   .book {
-    width: 60px;
-    height: 60px;
+    width: 35px;
+    height: 35px;
   }
-
-  .book-sprite {
+  
+  .char-image {
     width: 50px;
   }
-
-  #score-display {
-    font-size: 22px;
-    padding: 16px;
+  
+  .character-select {
+    gap: 30px;
+    margin: 15px;
   }
-
+  
+  .pixel-title {
+    font-size: 14px;
+  }
+  
+  .title-image {
+    width: 50px;
+  }
+  
+  #start-screen {
+    padding: 30px 20px;
+  }
+  
+  #popup {
+    width: 90%;
+    max-width: 400px;
+    padding: 20px;
+    font-size: 12px;
+  }
+  
   .popup-content {
-    font-size: 16px;
-    padding: 30px;
+    width: 90%;
+    max-width: 500px;
+    padding: 15px;
+    font-size: 11px;
   }
+  
+  .popup-content li {
+    margin: 8px 0;
+  }
+  
+  .popup-content button {
+    font-size: 12px;
+    padding: 8px 15px;
+  }
+}
 
+@media (max-width: 480px) {
+  #game-screen {
+    margin-top: 5px;
+  }
+  
+  #game-title {
+    font-size: 12px;
+    margin: 3px auto 0 auto;
+  }
+  
+  #top-bar {
+    width: 95%;
+    margin: 3px auto;
+    padding: 0 3px;
+  }
+  
+  #score-display {
+    font-size: 12px;
+    padding: 6px;
+  }
+  
+  #hearts {
+    font-size: 18px;
+    gap: 6px;
+  }
+  
+  #game-container {
+    width: 95%;
+    height: 400px;
+  }
+  
+  #player {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .book {
+    width: 30px;
+    height: 30px;
+  }
+  
   .char-image {
-    width: 80px;
+    width: 45px;
+  }
+  
+  .character-select {
+    gap: 20px;
+    margin: 10px;
+  }
+  
+  .pixel-title {
+    font-size: 12px;
+  }
+  
+  .title-image {
+    width: 45px;
+  }
+  
+  #start-screen {
+    padding: 20px 15px;
+  }
+  
+  #popup {
+    width: 95%;
+    padding: 15px;
+    font-size: 11px;
+  }
+  
+  .popup-content {
+    width: 95%;
+    padding: 12px;
+    font-size: 10px;
+  }
+  
+  .popup-content li {
+    margin: 6px 0;
+  }
+  
+  .popup-content button {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+  
+  .popup-book {
+    width: 25px;
+  }
+}
+
+@media (max-width: 360px) {
+  #game-container {
+    width: 98%;
+    height: 350px;
+  }
+  
+  #player {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .book {
+    width: 25px;
+    height: 25px;
+  }
+  
+  #game-title {
+    font-size: 11px;
+  }
+  
+  #score-display {
+    font-size: 11px;
+    padding: 5px;
+  }
+  
+  #hearts {
+    font-size: 16px;
+    gap: 5px;
+  }
+  
+  .char-image {
+    width: 40px;
+  }
+  
+  .pixel-title {
+    font-size: 11px;
+  }
+  
+  .title-image {
+    width: 40px;
   }
 }
