@@ -228,15 +228,6 @@ button {
   vertical-align: middle;
 }
 
-@keyframes fall {
-  from {
-    top: -50px;
-  }
-  to {
-    top: var(--fall-end, 450px);
-  }
-}
-
 .hidden { 
   display: none; 
 }
@@ -480,193 +471,6 @@ button {
 
 #game-container.bg-dark-3 {
   background-color: #000000; 
-}
-
-.reflections-history {
-  position: relative;
-  background: white;
-  border: 3px solid #333;
-  border-radius: 15px;
-  padding: 30px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.reflections-history h2 {
-  color: #2c5aa0;
-  font-size: 20px;
-  margin-bottom: 25px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.reflection-entry {
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-  border: 2px solid #dee2e6;
-  border-radius: 10px;
-  padding: 20px;
-  margin: 20px 0;
-  text-align: left;
-}
-
-.reflection-entry h3 {
-  color: #495057;
-  font-size: 16px;
-  margin-bottom: 15px;
-  border-bottom: 2px solid #6c757d;
-  padding-bottom: 10px;
-}
-
-.reflection-entry p {
-  font-size: 12px;
-  line-height: 1.6;
-  margin: 8px 0;
-}
-
-.reflection-entry strong {
-  color: #2c5aa0;
-}
-
-/* Admin clear button positioned in top right */
-.admin-clear-btn {
-  position: absolute;
-  top: 25px;
-  right: 25px;
-  background: linear-gradient(135deg, #dc3545, #c82333);
-  color: white;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  z-index: 10;
-  transition: all 0.3s ease;
-}
-
-.admin-clear-btn:hover {
-  background: linear-gradient(135deg, #c82333, #bd2130);
-  transform: scale(1.05);
-}
-
-/* Make sure the main back button is centered */
-.reflections-history .action-buttons {
-  justify-content: center;
-}
-
-/* Reflection Gallery Styles */
-.reflections-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
-}
-.reflections-header h2 {
-  font-size: 2em;
-  margin-bottom: 0.2em;
-  color: #6a1b9a;
-  letter-spacing: 1px;
-}
-.reflection-summary {
-  font-size: 1.1em;
-  margin-bottom: 10px;
-  color: #333;
-}
-.reflection-count {
-  font-weight: bold;
-  color: #4caf50;
-}
-.admin-clear-btn {
-  background: #e57373;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  padding: 6px 16px;
-  font-size: 1em;
-  cursor: pointer;
-  margin-top: 8px;
-  margin-bottom: 8px;
-  transition: background 0.2s;
-}
-.admin-clear-btn:hover {
-  background: #c62828;
-}
-
-.reflections-gallery {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  justify-content: center;
-  margin-bottom: 30px;
-}
-.reflection-card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(106,27,154,0.10), 0 1.5px 4px rgba(0,0,0,0.08);
-  padding: 22px 28px 18px 28px;
-  width: 340px;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.15s, box-shadow 0.15s;
-  border: 2px solid #ede7f6;
-}
-.reflection-card:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 8px 24px rgba(106,27,154,0.18), 0 2px 8px rgba(0,0,0,0.10);
-  border-color: #ce93d8;
-}
-.reflection-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.reflection-number {
-  font-size: 1.1em;
-  font-weight: bold;
-  color: #7b1fa2;
-}
-.reflection-date {
-  font-size: 0.95em;
-  color: #888;
-}
-.reflection-time {
-  font-size: 0.9em;
-  color: #b39ddb;
-  margin-left: 4px;
-}
-.reflection-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.reflection-player {
-  font-size: 1.1em;
-  margin-bottom: 2px;
-  color: #512da8;
-}
-.reflection-score {
-  font-size: 1em;
-  margin-bottom: 6px;
-  color: #388e3c;
-}
-.reflection-section {
-  margin-bottom: 7px;
-  background: #f3e5f5;
-  border-radius: 6px;
-  padding: 7px 10px 5px 10px;
-}
-.reflection-section strong {
-  color: #6a1b9a;
-}
-.reflection-text {
-  margin: 3px 0 0 0;
-  font-size: 0.98em;
-  color: #333;
-  line-height: 1.5;
-}
-.icon {
-  margin-right: 6px;
-  font-size: 1.1em;
-  vertical-align: middle;
 }
 
 /* Mobile Responsive Styles for Reflection Screen */
@@ -1039,4 +843,112 @@ button {
   .title-image {
     width: 40px;
   }
+}
+
+/* Email Content Styles */
+.email-content {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border: 2px solid #dee2e6;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.email-content h3 {
+  color: #495057;
+  font-size: 16px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.email-details {
+  background: white;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.email-details p {
+  font-size: 12px;
+  margin: 5px 0;
+}
+
+.email-body {
+  background: white;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  padding: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.email-body pre {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.reflections-info {
+  background: white;
+  border: 3px solid #333;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.reflections-info h2 {
+  color: #2c5aa0;
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.reflections-info p {
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+.email-instructions, .reflection-benefits {
+  background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+  border: 2px solid #9c27b0;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.email-instructions h3, .reflection-benefits h3 {
+  color: #6a1b9a;
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.email-instructions ul, .reflection-benefits ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.email-instructions li, .reflection-benefits li {
+  font-size: 12px;
+  margin: 8px 0;
+  padding-left: 20px;
+  position: relative;
+}
+
+.email-instructions li:before {
+  content: "📧";
+  position: absolute;
+  left: 0;
+}
+
+.reflection-benefits li:before {
+  content: "💝";
+  position: absolute;
+  left: 0;
 }
